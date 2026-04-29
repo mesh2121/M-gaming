@@ -211,13 +211,13 @@
             lvl: () => { [400, 500, 600, 800].forEach((f, i) => setTimeout(() => playSynth(f, 'sine', 0.3, 0.15), i * 150)); }
         };
 
-        // --- 2. محتوى الصفحات القانونية ---
+        // --- 2. محتوى الصفحات القانونية وخدمة العملاء ---
         const pages = {
             'about_game': { t: 'عن اللعبة', c: '<p>لعبة كليكر بسيطة وممتعة تعتمد على جمع العملات وفتح التطويرات والأشكال لتصل إلى أعلى المستويات وتنافس في لوحة الصدارة.</p>' },
             'about_us': { t: 'من نحن', c: '<p>فريق تطوير مستقل يسعى لصنع ألعاب متصفح سريعة، ممتعة، وخفيفة وتعمل على جميع الأجهزة بدون تحميل.</p>' },
             'privacy': { t: 'سياسة الخصوصية', c: '<ul><li>يتم حفظ بيانات اللعبة محلياً (Local Storage) في متصفحك.</li><li>نستخدم خدمات جوجل الإعلانية التي قد تستخدم ملفات الارتباط (Cookies).</li><li>لا نجمع معلومات شخصية أو نبيعها لأطراف ثالثة.</li></ul>' },
             'terms': { t: 'شروط الاستخدام', c: '<ul><li>استمتع باللعب وتنافس بشرف.</li><li>يُمنع استخدام برامج النقر التلقائي (Auto-clickers) للتلاعب بلوحة الصدارة.</li><li>نحتفظ بحق تصفير النقاط أو تحديث اللعبة في أي وقت لضمان التوازن.</li></ul>' },
-            'contact': { t: 'خدمة العملاء', c: '<p>لأي استفسار أو اقتراح:</p><input type="text" class="modal-input" placeholder="الاسم"><textarea class="modal-textarea" rows="4" placeholder="اكتب رسالتك هنا..."></textarea><button class="btn buy" style="width:100%" onclick="submitContact()">إرسال</button>' }
+            'contact': { t: 'تواصل معي', c: '<p>يسعدني جداً تواصلكم، وسماع مقترحاتكم لتطوير اللعبة!</p><div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;"><a href="https://x.com/@meshdevgame12" target="_blank" class="btn" style="background: #000000; color: white; text-decoration: none; text-align: center; padding: 15px; font-size: 1.1rem; border-radius: 10px;">𝕏 تابعني وراسلني على إكس</a><a href="https://www.tiktok.com/@meshdevgaming" target="_blank" class="btn" style="background: #fe2c55; color: white; text-decoration: none; text-align: center; padding: 15px; font-size: 1.1rem; border-radius: 10px;">🎵 تابعني على تيك توك</a></div>' }
         };
 
         function openPage(id) {
@@ -226,7 +226,6 @@
             document.getElementById('info-modal').style.display = 'flex';
         }
         function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
-        function submitContact() { document.getElementById('info-content').innerHTML = '<h3 style="color:#22c55e; text-align:center;">تم الإرسال بنجاح! شكراً لك.</h3>'; }
 
         // --- 3. بيانات اللعبة الأساسية ---
         let gameData = { name: "", coins: 0, clickPower: 6, autoRate: 0, level: 1, exp: 0, expNext: 100, pClick: 50, pAuto: 150, pSuper: 5000, currentSkin: 0 };
