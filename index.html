@@ -3,340 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عالم الكوينز | الإصدار الشامل</title>
+    <title>عالم الكوينز | تحديث القوة القصوى x2</title>
     <style>
         :root {
-            --primary-color: #ffd700;
-            --bg-color: #020617;
-            --card-bg: #1e293b;
+            --primary: #ffd700;
+            --bg: #020617;
+            --card: #1e293b;
             --accent: #38bdf8;
-            --special: #f43f5e;
-            --text-light: #f8fafc;
+            --danger: #f43f5e;
+            --power: #a855f7; /* لون الموُضاعف الجديد */
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg);
+            color: #f8fafc;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px 20px 80px 20px;
+            padding: 20px 20px 100px;
             margin: 0;
             user-select: none;
-            min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* حاوية إعلانات أدسنس */
-        .ad-container {
-            width: 100%; max-width: 728px; height: 90px; background: #0f172a;
-            border: 1px dashed #475569; display: flex; align-items: center;
-            justify-content: center; color: #64748b; margin-bottom: 20px; border-radius: 10px;
+        /* تحسينات الواجهة - العلوية */
+        .status-bar {
+            width: 100%; max-width: 600px; background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px); padding: 15px; border-radius: 20px;
+            border: 1px solid #334155; position: sticky; top: 10px; z-index: 100;
         }
 
-        .header { width: 100%; max-width: 800px; text-align: center; }
-        .player-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        #player-name-display { font-weight: bold; color: var(--accent); }
-        #coin-count { font-size: 4rem; color: var(--primary-color); text-shadow: 0 0 20px gold; margin: 10px 0; transition: transform 0.1s; }
-        .exp-container { background: #334155; height: 12px; border-radius: 6px; overflow: hidden; margin: 10px 0; }
-        #exp-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #38bdf8, #818cf8); transition: 0.3s; }
+        #coin-count {
+            font-size: 3.5rem; color: var(--primary); font-weight: 900;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.4); margin: 5px 0;
+            transition: 0.1s;
+        }
 
-        /* منطقة اللعب وتأثير التطاير */
-        .game-area { position: relative; margin: 20px 0 40px; }
-        .coin-btn {
-            width: 180px; height: 180px; border-radius: 50%; cursor: pointer;
-            font-size: 5rem; display: flex; align-items: center; justify-content: center;
-            transition: transform 0.1s; border: 8px solid #b38f00;
+        /* نظام التنبيه للمضاعف x2 */
+        #multiplier-badge {
+            background: linear-gradient(45deg, var(--power), #d8b4fe);
+            color: white; padding: 5px 15px; border-radius: 50px;
+            font-weight: bold; font-size: 1rem; display: none;
+            animation: pulse 1s infinite; margin-top: 5px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0px var(--power); }
+            50% { transform: scale(1.1); box-shadow: 0 0 20px var(--power); }
+            100% { transform: scale(1); box-shadow: 0 0 0px var(--power); }
+        }
+
+        /* العملة الرئيسية */
+        .coin-wrap { position: relative; margin: 40px 0; cursor: pointer; }
+        .main-coin {
+            width: 200px; height: 200px; border-radius: 50%;
+            font-size: 6rem; display: flex; align-items: center; justify-content: center;
             background: radial-gradient(circle, #ffde33, #e6b800);
-            box-shadow: 0 12px 0 #997a00; z-index: 10; position: relative;
-            outline: none; -webkit-tap-highlight-color: transparent;
+            border: 8px solid #b38f00; box-shadow: 0 12px 0 #997a00;
+            transition: 0.05s;
         }
-        .coin-btn:active { transform: translateY(8px) scale(0.95); box-shadow: 0 4px 0 #997a00; }
+        .main-coin:active { transform: scale(0.92) translateY(10px); box-shadow: 0 2px 0 #997a00; }
 
-        /* ستايل الكوين المتطايرة */
-        .particle {
-            position: fixed; pointer-events: none; font-weight: bold; font-size: 1.5rem;
-            color: var(--primary-color); text-shadow: 1px 1px 5px black;
-            animation: floatUp 0.8s ease-out forwards; z-index: 1000;
+        /* تأثير الشاشة عند تفعيل القوة القصوى */
+        .active-boost-bg { animation: shake 0.5s infinite; background: radial-gradient(circle, #1e1b4b 0%, #020617 100%) !important; }
+        @keyframes shake { 0% { transform: translate(0,0); } 25% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0,0); } }
+
+        /* الأقسام السفلية */
+        .shop-container {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px; width: 100%; max-width: 1000px; margin-top: 20px;
         }
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1.5); }
+        .shop-card {
+            background: var(--card); padding: 20px; border-radius: 18px;
+            border: 1px solid #334155; position: relative; overflow: hidden;
         }
-
-        #boost-timer { 
-            position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
-            background: var(--special); padding: 5px 15px; border-radius: 20px;
-            font-weight: bold; display: none; animation: blink 1s infinite;
-        }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-        /* الحاويات الرئيسية */
-        .main-layout { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; max-width: 1200px; justify-content: center; }
-        .column { flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 20px; }
-        .box { background: var(--card-bg); padding: 20px; border-radius: 15px; border: 1px solid #334155; }
-        h3 { border-bottom: 2px solid #334155; padding-bottom: 10px; text-align: center; color: var(--accent); margin-top: 0; }
-
-        .item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px; border-radius: 10px; margin-bottom: 8px; }
-        .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .buy { background: #22c55e; color: white; }
-        .buy:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
-        .special-btn { background: var(--special); color: white; width: 100%; margin-top: 5px; }
-
-        /* سكنات (شبكة بـ 4 أعمدة) */
-        .skin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .skin-unit { aspect-ratio: 1; background: #0f172a; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 2rem; border: 2px solid transparent; }
-        .skin-unit.active { border-color: var(--accent); background: #1e293b; }
-        .skin-unit.locked { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; }
-
-        /* الفوتر والصفحات القانونية */
-        footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; padding: 15px 0; border-top: 1px solid #334155; text-align: center; z-index: 100; }
-        .footer-links { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; padding: 0 10px; }
-        .footer-links span { color: #94a3b8; cursor: pointer; font-size: 0.9rem; text-decoration: underline; }
-
-        /* المودال (النوافذ المنبثقة) */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-box { background: var(--card-bg); padding: 30px; border-radius: 15px; border: 1px solid var(--accent); width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; text-align: right; line-height: 1.6; }
-        .modal-box h2 { color: var(--primary-color); border-bottom: 1px solid #334155; padding-bottom: 10px; margin-top: 0; text-align: center;}
-        .close-modal-btn { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; }
-        .modal-input, .modal-textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        .shop-card.locked { opacity: 0.5; filter: blur(1px); pointer-events: none; }
         
-        #save-notification { position: fixed; bottom: 80px; right: 20px; background: #22c55e; color: white; padding: 10px 20px; border-radius: 8px; opacity: 0; transition: 0.5s; z-index: 1000; pointer-events: none;}
+        .btn-upgrade {
+            width: 100%; border: none; padding: 12px; border-radius: 10px;
+            font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px;
+            background: #22c55e; color: white;
+        }
+        .btn-upgrade:disabled { background: #475569; cursor: not-allowed; }
+
+        /* الجسيمات المتطايرة */
+        .particle {
+            position: fixed; pointer-events: none; font-weight: 900;
+            animation: float 0.7s ease-out forwards; z-index: 1000;
+        }
+        @keyframes float {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5); }
+        }
     </style>
 </head>
-<body>
+<body id="body">
 
-    <div id="save-notification">تم الحفظ ✓</div>
-
-    <div id="name-modal" class="modal-overlay">
-        <div class="modal-box" style="text-align: center; max-width: 400px;">
-            <h2>مرحباً بك في عالم الكوينز</h2>
-            <p>أدخل اسمك للمنافسة في لوحة الصدارة</p>
-            <input type="text" id="player-name-input" class="modal-input" placeholder="اسم اللاعب..." maxlength="12" style="text-align:center; font-size:1.1rem;">
-            <button class="btn buy" style="width: 100%; padding: 12px;" onclick="saveName()">ابدأ اللعب</button>
+    <div class="status-bar">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div><span id="player-name" style="color:var(--accent)">القائد</span> | ليفل <span id="lvl">1</span></div>
+            <div id="multiplier-badge">⚡ ناتج الضغط x2 مفعل</div>
         </div>
-    </div>
-
-    <div id="info-modal" class="modal-overlay">
-        <div class="modal-box">
-            <h2 id="info-title">العنوان</h2>
-            <div id="info-content">المحتوى...</div>
-            <button class="close-modal-btn" onclick="closeInfoModal()">إغلاق</button>
+        <div style="background: #334155; height: 8px; border-radius: 4px; margin: 10px 0; overflow: hidden;">
+            <div id="exp-bar" style="width: 0%; height: 100%; background: var(--accent); transition: 0.3s;"></div>
         </div>
-    </div>
-
-    <div class="ad-container"><small>مساحة إعلانية Google AdSense</small></div>
-
-    <div class="header">
-        <div class="player-info">
-            <div>مستوى <span id="lvl">1</span></div>
-            <div id="player-name-display">اللاعب</div>
-        </div>
-        <div class="exp-container"><div id="exp-fill"></div></div>
         <div id="coin-count">0</div>
-        <p style="color: #64748b; font-size: 0.9rem;">قوة الضغطة: <span id="stat-power">6</span> | تلقائي: <span id="stat-auto">0</span></p>
+        <div style="font-size: 0.8rem; color: #94a3b8;">الضغط: <span id="pwr">6</span> | التلقائي: <span id="auto">0</span></div>
     </div>
 
-    <div class="game-area">
-        <div id="boost-timer">BOOST: 30s</div>
-        <button class="coin-btn" id="coin" onclick="handleMine(event)">💰</button>
+    <div class="coin-wrap" onclick="tap(event)">
+        <div class="main-coin" id="coin-btn">💰</div>
     </div>
 
-    <div class="main-layout">
-        <div class="column">
-            <div class="box">
-                <h3>التطويرات والمتجر</h3>
-                <div class="item">
-                    <div>ضغطة متطورة (+2)<br><small>السعر: <span id="c1">50</span></small></div>
-                    <button class="btn buy" id="b1" onclick="upgradeClick()">تطوير</button>
-                </div>
-                <div class="item">
-                    <div>تعدين آلي (+5)<br><small>السعر: <span id="c2">150</span></small></div>
-                    <button class="btn buy" id="b2" onclick="upgradeAuto()">تطوير</button>
-                </div>
-                <div class="item" style="border: 1px solid #f43f5e; flex-direction: column;">
-                    <div style="width: 100%; display: flex; justify-content: space-between;">
-                        <strong>مفاعل كوني (x10 تلقائي)</strong><small>السعر: <span id="c3">5000</span></small>
-                    </div>
-                    <button class="btn special-btn" id="b3" onclick="upgradeSuperAuto()">شراء</button>
-                </div>
-                <div class="item" style="flex-direction: column; text-align: center; gap: 5px; margin-top: 15px; border: 1px dashed #a855f7;">
-                    <strong>جرعة مضاعفة الطاقة (x10 للضغط)</strong><small>السعر: 1000 كوين | المدة: 30 ثانية</small>
-                    <button class="btn buy" style="width: 100%; background: #a855f7;" id="b-boost" onclick="activateBoost()">تفعيل</button>
-                </div>
-            </div>
+    <div class="shop-container">
+        <div class="shop-card" style="border: 2px solid var(--power);">
+            <h3 style="margin-top:0; color:var(--power)">نظام الشحن (x2 للضغط)</h3>
+            <p style="font-size: 0.85rem; color:#94a3b8;">يضاعف أرباح كل ضغطة يدوية للأبد!</p>
+            <button class="btn-upgrade" id="u-mult" onclick="buyMultiplier()" style="background:var(--power)">
+                ترقية للأبد (<span id="p-mult">2000</span>)
+            </button>
         </div>
 
-        <div class="column">
-            <div class="box">
-                <h3>الأشكال (Skins)</h3>
-                <div class="skin-grid" id="skin-grid"></div>
-            </div>
-            <div class="box">
-                <h3>لوحة الصدارة</h3>
-                <div id="leaderboard"></div>
-            </div>
+        <div class="shop-card">
+            <h3>قوة اليد (+5)</h3>
+            <button class="btn-upgrade" id="u-click" onclick="buyClick()">ترقية (<span id="p-click">50</span>)</button>
+        </div>
+
+        <div class="shop-card">
+            <h3>منجم آلي (+10)</h3>
+            <button class="btn-upgrade" id="u-auto" onclick="buyAuto()">ترقية (<span id="p-auto">150</span>)</button>
         </div>
     </div>
-
-    <footer>
-        <div class="footer-links">
-            <span onclick="openPage('about_game')">عن اللعبة</span>
-            <span onclick="openPage('about_us')">من نحن</span>
-            <span onclick="openPage('privacy')">الخصوصية</span>
-            <span onclick="openPage('terms')">شروط الاستخدام</span>
-            <span onclick="openPage('contact')">خدمة العملاء</span>
-        </div>
-    </footer>
 
     <script>
-        // --- 1. نظام الصوت البرمجي ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSynth(freq, type, duration, vol) {
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(); osc.stop(audioCtx.currentTime + duration);
-            } catch(e) {}
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        function sfx(f, t, d, v) {
+            try { if(ctx.state==='suspended')ctx.resume(); const o=ctx.createOscillator(), g=ctx.createGain();
+            o.type=t; o.frequency.setValueAtTime(f, ctx.currentTime); g.gain.setValueAtTime(v, ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime+d); o.connect(g); g.connect(ctx.destination);
+            o.start(); o.stop(ctx.currentTime+d); } catch(e){}
         }
-        const sounds = {
-            click: () => playSynth(500, 'sine', 0.1, 0.1),
-            buy: () => { playSynth(400, 'triangle', 0.1, 0.1); setTimeout(() => playSynth(600, 'triangle', 0.1, 0.1), 50); },
-            lvl: () => { [400, 500, 600, 800].forEach((f, i) => setTimeout(() => playSynth(f, 'sine', 0.3, 0.15), i * 150)); }
+
+        let data = {
+            coins: 0, click: 6, auto: 0, mult: 1, 
+            pClick: 50, pAuto: 150, pMult: 2000,
+            lvl: 1, exp: 0, expN: 100
         };
 
-        // --- 2. محتوى الصفحات القانونية وخدمة العملاء ---
-        const pages = {
-            'about_game': { t: 'عن اللعبة', c: '<p>لعبة كليكر بسيطة وممتعة تعتمد على جمع العملات وفتح التطويرات والأشكال لتصل إلى أعلى المستويات وتنافس في لوحة الصدارة.</p>' },
-            'about_us': { t: 'من نحن', c: '<p>فريق تطوير مستقل يسعى لصنع ألعاب متصفح سريعة، ممتعة، وخفيفة وتعمل على جميع الأجهزة بدون تحميل.</p>' },
-            'privacy': { t: 'سياسة الخصوصية', c: '<ul><li>يتم حفظ بيانات اللعبة محلياً (Local Storage) في متصفحك.</li><li>نستخدم خدمات جوجل الإعلانية التي قد تستخدم ملفات الارتباط (Cookies).</li><li>لا نجمع معلومات شخصية أو نبيعها لأطراف ثالثة.</li></ul>' },
-            'terms': { t: 'شروط الاستخدام', c: '<ul><li>استمتع باللعب وتنافس بشرف.</li><li>يُمنع استخدام برامج النقر التلقائي (Auto-clickers) للتلاعب بلوحة الصدارة.</li><li>نحتفظ بحق تصفير النقاط أو تحديث اللعبة في أي وقت لضمان التوازن.</li></ul>' },
-            'contact': { t: 'تواصل معي', c: '<p>يسعدني جداً تواصلكم، وسماع مقترحاتكم لتطوير اللعبة!</p><div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;"><a href="https://x.com/@meshdevgame12" target="_blank" class="btn" style="background: #000000; color: white; text-decoration: none; text-align: center; padding: 15px; font-size: 1.1rem; border-radius: 10px;">𝕏 تابعني وراسلني على إكس</a><a href="https://www.tiktok.com/@meshdevgaming" target="_blank" class="btn" style="background: #fe2c55; color: white; text-decoration: none; text-align: center; padding: 15px; font-size: 1.1rem; border-radius: 10px;">🎵 تابعني على تيك توك</a></div>' }
-        };
-
-        function openPage(id) {
-            document.getElementById('info-title').innerHTML = pages[id].t;
-            document.getElementById('info-content').innerHTML = pages[id].c;
-            document.getElementById('info-modal').style.display = 'flex';
-        }
-        function closeInfoModal() { document.getElementById('info-modal').style.display = 'none'; }
-
-        // --- 3. بيانات اللعبة الأساسية ---
-        let gameData = { name: "", coins: 0, clickPower: 6, autoRate: 0, level: 1, exp: 0, expNext: 100, pClick: 50, pAuto: 150, pSuper: 5000, currentSkin: 0 };
-        let boostActive = false; let boostTime = 0;
-
-        // 12 شكلاً جديداً ومميزاً
-        const skins = [
-            {i: "💰", l: 1, c: "#ffde33", b: "#b38f00"}, {i: "🪙", l: 3, c: "#cbd5e1", b: "#64748b"},
-            {i: "🔥", l: 5, c: "#f97316", b: "#9a3412"}, {i: "🧊", l: 8, c: "#38bdf8", b: "#0369a1"},
-            {i: "💎", l: 12, c: "#a5f3fc", b: "#0ea5e9"}, {i: "⚛️", l: 16, c: "#c084fc", b: "#7e22ce"},
-            {i: "👑", l: 20, c: "#facc15", b: "#a16207"}, {i: "🌈", l: 25, c: "#fb7185", b: "#be123c"},
-            {i: "🧿", l: 30, c: "#1e1b4b", b: "#312e81"}, {i: "🌟", l: 40, c: "#ffffff", b: "#94a3b8"},
-            {i: "🛸", l: 50, c: "#4ade80", b: "#166534"}, {i: "🌌", l: 60, c: "#000000", b: "#4c1d95"}
-        ];
-
-        // --- 4. الميكانيكيات (النقر، التطاير، الخبرة، التطوير) ---
-        function handleMine(e) {
-            sounds.click();
-            let gain = boostActive ? gameData.clickPower * 10 : gameData.clickPower;
-            gameData.coins += gain; gainExp(gain);
-            createParticle(e.clientX || (e.touches && e.touches[0].clientX), e.clientY || (e.touches && e.touches[0].clientY), gain);
+        function tap(e) {
+            sfx(500, 'sine', 0.1, 0.1);
+            let gain = data.click * data.mult;
+            data.coins += gain;
+            data.exp += gain;
             
-            const btn = document.getElementById('coin');
-            btn.style.transform = "scale(0.95) translateY(8px)";
-            setTimeout(() => btn.style.transform = "scale(1) translateY(0)", 50);
-            updateUI();
+            checkLvl();
+            createPart(e.clientX, e.clientY, gain);
+            update();
         }
 
-        function createParticle(x, y, amount) {
-            if(!x || !y) { const r = document.getElementById('coin').getBoundingClientRect(); x = r.left + r.width/2; y = r.top + r.height/2; }
-            const p = document.createElement('div'); p.className = 'particle'; p.innerText = `+${amount}`;
+        function createPart(x, y, amt) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.innerText = `+${amt}`;
             p.style.left = x + 'px'; p.style.top = y + 'px';
-            p.style.setProperty('--x', ((Math.random() - 0.5) * 150) + 'px');
-            p.style.setProperty('--y', (-150 - Math.random() * 50) + 'px');
-            document.body.appendChild(p); setTimeout(() => p.remove(), 800);
+            p.style.color = data.mult > 1 ? 'var(--power)' : 'var(--primary)';
+            p.style.setProperty('--tx', (Math.random()-0.5)*200 + 'px');
+            p.style.setProperty('--ty', (-150-Math.random()*100) + 'px');
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 700);
         }
 
-        function gainExp(amt) {
-            gameData.exp += amt;
-            if (gameData.exp >= gameData.expNext) {
-                gameData.level++; gameData.exp = 0; gameData.expNext = Math.floor(gameData.expNext * 1.8);
-                sounds.lvl(); gameData.coins += gameData.level * 200;
-                renderSkins(); updateLeaderboard(); updateUI();
+        function buyMultiplier() {
+            if(data.coins >= data.pMult) {
+                data.coins -= data.pMult;
+                data.mult = 2; // تفعيل الضرب في 2
+                data.pMult = Math.floor(data.pMult * 5); // الترقية القادمة أغلى بكثير
+                sfx(800, 'square', 0.2, 0.1);
+                document.getElementById('body').classList.add('active-boost-bg');
+                update();
             }
         }
 
-        function upgradeClick() { if(gameData.coins >= gameData.pClick) { gameData.coins -= gameData.pClick; gameData.clickPower += 2; gameData.pClick = Math.floor(gameData.pClick * 1.5); sounds.buy(); updateUI(); } }
-        function upgradeAuto() { if(gameData.coins >= gameData.pAuto) { gameData.coins -= gameData.pAuto; gameData.autoRate += 5; gameData.pAuto = Math.floor(gameData.pAuto * 1.6); sounds.buy(); updateUI(); } }
-        function upgradeSuperAuto() { if(gameData.coins >= gameData.pSuper) { gameData.coins -= gameData.pSuper; gameData.autoRate += 100; gameData.pSuper = Math.floor(gameData.pSuper * 2.5); sounds.buy(); updateUI(); } }
-        function activateBoost() { if(gameData.coins >= 1000 && !boostActive) { gameData.coins -= 1000; boostActive = true; boostTime = 30; document.getElementById('boost-timer').style.display = 'block'; updateUI(); } }
-
-        // --- 5. واجهة المستخدم والتحديثات ---
-        function updateUI() {
-            document.getElementById('coin-count').innerText = Math.floor(gameData.coins);
-            document.getElementById('lvl').innerText = gameData.level;
-            document.getElementById('exp-fill').style.width = Math.min((gameData.exp/gameData.expNext*100), 100) + "%";
-            document.getElementById('stat-power').innerText = boostActive ? gameData.clickPower * 10 : gameData.clickPower;
-            document.getElementById('stat-auto').innerText = gameData.autoRate;
-            document.getElementById('c1').innerText = gameData.pClick;
-            document.getElementById('c2').innerText = gameData.pAuto;
-            document.getElementById('c3').innerText = gameData.pSuper;
-            document.getElementById('b1').disabled = gameData.coins < gameData.pClick;
-            document.getElementById('b2').disabled = gameData.coins < gameData.pAuto;
-            document.getElementById('b3').disabled = gameData.coins < gameData.pSuper;
-            document.getElementById('b-boost').disabled = (gameData.coins < 1000 || boostActive);
+        function buyClick() {
+            if(data.coins >= data.pClick) {
+                data.coins -= data.pClick; data.click += 5;
+                data.pClick = Math.floor(data.pClick * 1.5);
+                sfx(400, 'triangle', 0.1, 0.1); update();
+            }
         }
 
-        function renderSkins() {
-            const grid = document.getElementById('skin-grid'); grid.innerHTML = '';
-            skins.forEach((s, i) => {
-                const div = document.createElement('div'); const locked = gameData.level < s.l;
-                div.className = `skin-unit ${locked ? 'locked' : ''} ${gameData.currentSkin === i ? 'active' : ''}`;
-                div.innerHTML = s.i;
-                if(!locked) div.onclick = () => { gameData.currentSkin = i; applySkin(i); sounds.click(); };
-                grid.appendChild(div);
-            });
+        function buyAuto() {
+            if(data.coins >= data.pAuto) {
+                data.coins -= data.pAuto; data.auto += 10;
+                data.pAuto = Math.floor(data.pAuto * 1.6);
+                sfx(300, 'sawtooth', 0.1, 0.05); update();
+            }
         }
 
-        function applySkin(i) {
-            const s = skins[i]; const btn = document.getElementById('coin');
-            btn.innerHTML = s.i; btn.style.background = `radial-gradient(circle, ${s.c}, ${s.b})`;
-            btn.style.borderColor = s.b; btn.style.boxShadow = `0 12px 0 ${s.b}`; renderSkins();
+        function checkLvl() {
+            if(data.exp >= data.expN) {
+                data.lvl++; data.exp = 0; data.expN = Math.floor(data.expN * 1.8);
+                sfx(600, 'sine', 0.5, 0.2);
+                alert("مبروك! ارتفع مستواك لـ " + data.lvl);
+            }
         }
 
-        function updateLeaderboard() {
-            const lb = document.getElementById('leaderboard');
-            const list = [ {n: gameData.name || "أنت", l: gameData.level, me: true}, {n: "Master_X", l: 55}, {n: "Ahmed_Pro", l: 45}, {n: "SARA_99", l: 32}, {n: "Ghost", l: 24} ].sort((a,b) => b.l - a.l);
-            lb.innerHTML = list.slice(0,5).map(p => `<div style="padding:10px; border-bottom:1px solid #334155; display:flex; justify-content:space-between; ${p.me?'background:rgba(56,189,248,0.1); font-weight:bold;':''}"><span style="${p.me?'color:var(--primary-color)':''}">${p.n}</span><span>LVL ${p.l}</span></div>`).join('');
+        function update() {
+            document.getElementById('coin-count').innerText = Math.floor(data.coins);
+            document.getElementById('lvl').innerText = data.lvl;
+            document.getElementById('exp-bar').style.width = (data.exp/data.expN*100) + "%";
+            document.getElementById('pwr').innerText = data.click * data.mult;
+            document.getElementById('auto').innerText = data.auto;
+            
+            document.getElementById('p-click').innerText = data.pClick;
+            document.getElementById('p-auto').innerText = data.pAuto;
+            document.getElementById('p-mult').innerText = data.pMult;
+
+            document.getElementById('u-click').disabled = data.coins < data.pClick;
+            document.getElementById('u-auto').disabled = data.coins < data.pAuto;
+            document.getElementById('u-mult').disabled = data.coins < data.pMult;
+
+            if(data.mult > 1) document.getElementById('multiplier-badge').style.display = 'block';
+            
+            localStorage.setItem('coinGameV4', JSON.stringify(data));
         }
 
-        // --- 6. الحفظ التلقائي والتسجيل ---
-        function saveName() {
-            const n = document.getElementById('player-name-input').value.trim();
-            if(n) { gameData.name = n; document.getElementById('player-name-display').innerText = n; document.getElementById('name-modal').style.display = 'none'; save(); updateLeaderboard(); }
-        }
-        function save() {
-            localStorage.setItem('coinGameUltimate', JSON.stringify(gameData));
-            const noti = document.getElementById('save-notification'); noti.style.opacity = '1'; setTimeout(() => noti.style.opacity = '0', 2000);
-        }
-        function load() {
-            const s = localStorage.getItem('coinGameUltimate');
-            if(s) { gameData = {...gameData, ...JSON.parse(s)}; document.getElementById('player-name-display').innerText = gameData.name; } 
-            else { document.getElementById('name-modal').style.display = 'flex'; }
-        }
+        setInterval(() => {
+            if(data.auto > 0) {
+                data.coins += data.auto;
+                data.exp += data.auto * 0.1;
+                checkLvl(); update();
+            }
+        }, 1000);
 
-        // --- 7. الحلقات الزمنية للعبة ---
-        setInterval(() => { if(gameData.autoRate > 0) { gameData.coins += gameData.autoRate; gainExp(gameData.autoRate * 0.1); updateUI(); } }, 1000);
-        setInterval(() => { if(boostActive) { boostTime--; document.getElementById('boost-timer').innerText = `BOOST: ${boostTime}s`; if(boostTime <= 0) { boostActive = false; document.getElementById('boost-timer').style.display = 'none'; } updateUI(); } }, 1000);
-        setInterval(save, 10000); // حفظ تلقائي كل 10 ثواني لتخفيف الحمل
-
-        window.onload = () => { load(); updateUI(); applySkin(gameData.currentSkin); renderSkins(); updateLeaderboard(); };
+        window.onload = () => {
+            const saved = localStorage.getItem('coinGameV4');
+            if(saved) data = JSON.parse(saved);
+            update();
+        };
     </script>
 </body>
 </html>
