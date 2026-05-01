@@ -40,121 +40,107 @@
             z-index: 9999; display: flex; flex-direction: column;
             align-items: center; justify-content: center; transition: 0.8s;
         }
-        .splash-logo { font-size: clamp(5rem, 15vw, 8rem); margin-bottom: 20px; animation: bounce 2s infinite; }
-        .splash-title { font-size: clamp(2rem, 6vw, 4rem); color: var(--primary-color); text-shadow: 0 0 20px gold; margin-bottom: 40px; text-align: center;}
-        .start-btn { background: var(--primary-color); color: #000; border: none; padding: 20px 60px; border-radius: 50px; font-size: clamp(1.2rem, 3vw, 2rem); font-weight: bold; cursor: pointer; box-shadow: 0 0 20px var(--primary-color); transition: 0.3s; }
-        .start-btn:hover { transform: scale(1.05); }
+        .splash-logo { font-size: 5rem; margin-bottom: 20px; animation: bounce 2s infinite; }
+        .splash-title { font-size: 2.5rem; color: var(--primary-color); text-shadow: 0 0 20px gold; margin-bottom: 30px; text-align: center;}
+        .start-btn { background: var(--primary-color); color: #000; border: none; padding: 15px 50px; border-radius: 50px; font-size: 1.5rem; font-weight: bold; cursor: pointer; box-shadow: 0 0 15px var(--primary-color); }
 
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
 
         /* الواجهة العلوية */
-        .header { width: 100%; max-width: 1200px; text-align: center; }
-        .player-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: clamp(1rem, 2vw, 1.5rem); }
-        
-        /* تكبير العداد ليتناسب مع الشاشة */
-        #coin-count { font-size: clamp(4rem, 10vw, 8rem); color: var(--primary-color); text-shadow: 0 0 30px gold; margin: 15px 0; font-weight: 800; line-height: 1; }
-        
-        .progress-container { background: #334155; height: 15px; border-radius: 8px; overflow: hidden; margin: 15px 0; position: relative; }
+        .header { width: 100%; max-width: 800px; text-align: center; }
+        .player-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        #coin-count { font-size: 4rem; color: var(--primary-color); text-shadow: 0 0 25px gold; margin: 10px 0; font-weight: 800; }
+        .progress-container { background: #334155; height: 12px; border-radius: 6px; overflow: hidden; margin: 10px 0; position: relative; }
         #exp-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #818cf8); transition: 0.3s; }
-        .bonus-tracker { background: rgba(255, 215, 0, 0.1); border: 1px solid var(--primary-color); padding: 8px 25px; border-radius: 20px; font-size: clamp(0.9rem, 2vw, 1.2rem); display: inline-block; margin-top: 10px; }
+        .bonus-tracker { background: rgba(255, 215, 0, 0.1); border: 1px solid var(--primary-color); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; display: inline-block; margin-top: 10px; }
 
         /* منطقة اللعب */
-        .game-area { position: relative; margin: 60px 0; display: flex; justify-content: center; width: 100%; }
-        
-        /* تكبير العملة بشكل ديناميكي */
+        .game-area { position: relative; margin: 30px 0; }
         .coin-btn {
-            width: clamp(200px, 35vw, 380px);
-            height: clamp(200px, 35vw, 380px);
-            border-radius: 50%; cursor: pointer;
-            font-size: clamp(6rem, 15vw, 12rem); 
-            display: flex; align-items: center; justify-content: center;
-            transition: 0.1s; border: clamp(8px, 1.5vw, 15px) solid #b38f00;
+            width: 180px; height: 180px; border-radius: 50%; cursor: pointer;
+            font-size: 5rem; display: flex; align-items: center; justify-content: center;
+            transition: 0.1s; border: 8px solid #b38f00;
             background: radial-gradient(circle, #ffde33, #e6b800);
-            box-shadow: 0 clamp(10px, 2vw, 20px) 0 #997a00; outline: none; -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 12px 0 #997a00; outline: none; -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
-        .coin-btn:active { transform: translateY(10px) scale(0.95); box-shadow: 0 5px 0 #997a00; }
+        .coin-btn:active { transform: translateY(8px) scale(0.92); box-shadow: 0 4px 0 #997a00; }
 
-        .boost-timers { position: absolute; top: -60px; width: 100%; display: flex; justify-content: center; gap: 15px; }
-        .timer-tag { padding: 8px 18px; border-radius: 15px; font-size: clamp(0.8rem, 2vw, 1.2rem); font-weight: bold; display: none; }
+        .boost-timers { position: absolute; top: -50px; width: 100%; display: flex; justify-content: center; gap: 10px; }
+        .timer-tag { padding: 5px 12px; border-radius: 15px; font-size: 0.7rem; font-weight: bold; display: none; }
 
-        /* الشبكة الرئيسية - توسيع المساحة */
-        .main-layout { display: flex; flex-wrap: wrap; gap: 30px; width: 100%; max-width: 1400px; justify-content: center; }
-        .column { flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 30px; }
-        
-        /* تكبير البطاقات ومحتوياتها */
-        .box { background: var(--card-bg); padding: clamp(20px, 3vw, 40px); border-radius: 20px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h3 { border-bottom: 2px solid #334155; padding-bottom: 15px; text-align: center; color: var(--accent); margin-top: 0; font-size: clamp(1.2rem, 2.5vw, 1.8rem); }
+        /* الشبكة الرئيسية */
+        .main-layout { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; max-width: 1200px; justify-content: center; }
+        .column { flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 20px; }
+        .box { background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h3 { border-bottom: 2px solid #334155; padding-bottom: 10px; text-align: center; color: var(--accent); margin-top: 0; }
 
-        .item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 15px 20px; border-radius: 12px; margin-bottom: 12px; border: 1px solid transparent; transition: 0.3s; font-size: clamp(1rem, 1.5vw, 1.2rem); }
-        .btn { border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: clamp(1rem, 1.5vw, 1.2rem); transition: 0.2s; color: white; }
+        .item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid transparent; transition: 0.3s; }
+        .btn { border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; color: white; }
         .buy { background: #22c55e; }
         .buy:disabled { background: #475569; cursor: not-allowed; opacity: 0.5; }
-        .boost-btn { background: var(--boost-manual); width: 100%; margin-top: 10px; padding: 15px; font-size: clamp(1rem, 2vw, 1.3rem); }
+        .boost-btn { background: var(--boost-manual); width: 100%; margin-top: 5px; }
 
         /* الذكاء الاصطناعي */
         .ai-box { background: linear-gradient(135deg, #1e293b, #312e81); border: 1px solid #6366f1; }
-        .ai-btn { background: linear-gradient(45deg, #4f46e5, #7c3aed); width: 100%; margin-bottom: 10px; padding: 15px; font-size: clamp(1rem, 2vw, 1.2rem); }
-        .ai-response-area { background: #0f172a; padding: 20px; border-radius: 10px; margin-top: 15px; font-size: clamp(1rem, 1.8vw, 1.2rem); border-left: 5px solid #8b5cf6; min-height: 60px; line-height: 1.6; }
+        .ai-btn { background: linear-gradient(45deg, #4f46e5, #7c3aed); width: 100%; margin-bottom: 8px; }
+        .ai-response-area { background: #0f172a; padding: 15px; border-radius: 10px; margin-top: 15px; font-size: 0.9rem; border-left: 4px solid #8b5cf6; min-height: 40px; }
 
         /* الأشكال */
-        #skin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 15px; width: 100%; }
-        .skin-unit { aspect-ratio: 1; background: #0f172a; border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: clamp(2rem, 4vw, 3.5rem); border: 3px solid transparent; transition: 0.2s; }
-        .skin-unit.active { border-color: var(--primary-color); background: #1e293b; transform: scale(1.05); }
+        #skin-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; min-height: 100px; width: 100%; }
+        .skin-unit { aspect-ratio: 1; background: #0f172a; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 2rem; border: 2px solid transparent; transition: 0.2s; }
+        .skin-unit.active { border-color: var(--primary-color); background: #1e293b; }
         .skin-unit.locked { opacity: 0.2; filter: grayscale(1); cursor: not-allowed; }
 
         /* النوافذ المنبثقة */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: var(--card-bg); padding: 40px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 500px; text-align: center; font-size: 1.1rem; }
-        .modal-btn-close { background: #ef4444; color: white; border: none; padding: 15px 20px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; font-size: 1.2rem;}
-        .social-btn { display: block; width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 10px; text-decoration: none; font-weight: bold; color: white; text-align: center; font-size: 1.2rem;}
+        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid var(--accent); width: 100%; max-width: 400px; text-align: center; }
+        .modal-btn-close { background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 15px; font-weight: bold; }
+        .social-btn { display: block; width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 10px; text-decoration: none; font-weight: bold; color: white; text-align: center;}
 
         /* الفوتر */
-        footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; padding: 20px 0; border-top: 1px solid #334155; text-align: center; z-index: 100; }
-        .footer-links span { color: #94a3b8; cursor: pointer; font-size: clamp(0.9rem, 1.5vw, 1.1rem); margin: 0 15px; text-decoration: underline; transition: 0.2s; }
-        .footer-links span:hover { color: var(--primary-color); }
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; padding: 15px 0; border-top: 1px solid #334155; text-align: center; z-index: 100; }
+        .footer-links span { color: #94a3b8; cursor: pointer; font-size: 0.8rem; margin: 0 10px; text-decoration: underline; }
 
         /* تأثير النقر */
-        .particle { position: fixed; pointer-events: none; font-weight: bold; font-size: clamp(1.5rem, 3vw, 2.5rem); color: var(--primary-color); animation: floatUp 0.8s ease-out forwards; z-index: 1000; text-shadow: 0 0 10px rgba(0,0,0,0.8); }
+        .particle { position: fixed; pointer-events: none; font-weight: bold; font-size: 1.5rem; color: var(--primary-color); animation: floatUp 0.8s ease-out forwards; z-index: 1000; }
         @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))); } }
     </style>
 </head>
 <body>
 
-    <!-- شاشة الدخول -->
     <div id="splash-screen">
         <div class="splash-logo">💰</div>
         <div class="splash-title">عالم الكوينز</div>
         <button class="start-btn" onclick="hideSplash()">ابدأ المغامرة 🚀</button>
     </div>
 
-    <!-- النوافذ المنبثقة -->
-    <div id="about-modal" class="modal"><div class="modal-content"><h3>عن عالم الكوينز</h3><p style="line-height: 1.8;">لعبة كليكر سعودية متطورة تهدف لجمع الثروة الرقمية وتطوير المفاعلات. العب بذكاء وتصدر القائمة!</p><button class="modal-btn-close" onclick="closeM('about-modal')">إغلاق</button></div></div>
-    <div id="privacy-modal" class="modal"><div class="modal-content"><h3>الخصوصية</h3><p style="line-height: 1.8;">جميع بياناتك وتقدمك في اللعبة تحفظ في متصفحك المحلي (Local Storage) الخاص بك فقط. نحن لا نطلع عليها أو نجمعها.</p><button class="modal-btn-close" onclick="closeM('privacy-modal')">إغلاق</button></div></div>
+    <div id="about-modal" class="modal"><div class="modal-content"><h3>عن عالم الكوينز</h3><p>لعبة كليكر سعودية متطورة تهدف لجمع الثروة الرقمية وتطوير المفاعلات.</p><button class="modal-btn-close" onclick="closeM('about-modal')">إغلاق</button></div></div>
+    <div id="privacy-modal" class="modal"><div class="modal-content"><h3>الخصوصية</h3><p>جميع بياناتك تحفظ في متصفحك المحلي (Local Storage) الخاص بك فقط.</p><button class="modal-btn-close" onclick="closeM('privacy-modal')">إغلاق</button></div></div>
     <div id="support-modal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 25px;">الدعم الفني</h3>
-            <a href="https://x.com/meshdevgame12" target="_blank" class="social-btn" style="background:#000;"><i class="fab fa-x-twitter"></i> إكس @meshdevgame12</a>
-            <a href="https://www.tiktok.com/@meshdevgaming" target="_blank" class="social-btn" style="background:#fe2c55;"><i class="fab fa-tiktok"></i> تيك توك meshdevgaming</a>
+            <h3>الدعم الفني</h3>
+            <a href="https://x.com/meshdevgame12" target="_blank" class="social-btn" style="background:#000;">إكس @meshdevgame12</a>
+            <a href="https://www.tiktok.com/@meshdevgaming" target="_blank" class="social-btn" style="background:#fe2c55;">تيك توك meshdevgaming</a>
             <button class="modal-btn-close" onclick="closeM('support-modal')">إغلاق</button>
         </div>
     </div>
     <div id="stats-modal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 20px;">إحصائياتك 📊</h3>
-            <div id="stats-body" style="text-align: right; line-height: 2.5; font-size: 1.2rem;">
-                <p><i class="fas fa-mouse-pointer" style="color:var(--accent)"></i> إجمالي الضغطات: <span id="m-stat-clicks" style="font-weight:bold;">0</span></p>
-                <p><i class="fas fa-coins" style="color:var(--primary-color)"></i> إجمالي الكوينز: <span id="m-stat-total-coins" style="font-weight:bold;">0</span></p>
-                <p><i class="fas fa-clock" style="color:var(--boost-auto)"></i> وقت اللعب: <span id="m-stat-time" style="font-weight:bold;">0</span> دقيقة</p>
+            <h3>إحصائياتك 📊</h3>
+            <div id="stats-body" style="text-align: right; line-height: 2;">
+                <p>إجمالي الضغطات: <span id="m-stat-clicks">0</span></p>
+                <p>إجمالي الكوينز المجمعة: <span id="m-stat-total-coins">0</span></p>
+                <p>وقت اللعب: <span id="m-stat-time">0</span> دقيقة</p>
             </div>
             <button class="modal-btn-close" onclick="closeM('stats-modal')">إغلاق</button>
         </div>
     </div>
 
-    <div id="save-notification" style="position: fixed; bottom: 100px; right: 20px; background: #22c55e; color: white; padding: 15px 25px; border-radius: 10px; font-size: 1.1rem; opacity: 0; transition: 0.5s; z-index: 1000;">تم الحفظ بنجاح ✓</div>
+    <div id="save-notification" style="position: fixed; bottom: 80px; right: 20px; background: #22c55e; color: white; padding: 10px 20px; border-radius: 8px; opacity: 0; transition: 0.5s; z-index: 1000;">تم الحفظ بنجاح ✓</div>
 
     <div class="header">
-        <div class="player-info"><div><i class="fas fa-trophy"></i> مستوى <span id="lvl">1</span></div><div id="player-name-display" style="color:var(--accent);">الأسطورة</div></div>
+        <div class="player-info"><div>مستوى <span id="lvl">1</span></div><div id="player-name-display" style="color:var(--accent);">الأسطورة</div></div>
         <div class="progress-container"><div id="exp-fill"></div></div>
         <div id="coin-count">0</div>
         <div class="bonus-tracker">بونص الـ 10,000: <span id="click-bonus-counter">0</span> / 10,000</div>
@@ -171,25 +157,25 @@
     <div class="main-layout">
         <div class="column">
             <div class="box">
-                <h3><i class="fas fa-arrow-up"></i> الترقيات اللانهائية</h3>
-                <div class="item"><div>قوة (+5)<br><small style="color:#94a3b8">السعر: <span id="p1" style="color:white">100</span></small></div><button class="btn buy" id="b1" onclick="buyPlus5()">شراء</button></div>
-                <div class="item"><div>مضاعف (X2)<br><small style="color:#94a3b8">السعر: <span id="p2" style="color:white">5000</span></small></div><button class="btn buy" id="b2" onclick="buyMult2()" style="background:#eab308; color:#000;">تطوير</button></div>
-                <div class="item"><div>تعدين آلي (+10)<br><small style="color:#94a3b8">السعر: <span id="p3" style="color:white">250</span></small></div><button class="btn buy" id="b3" onclick="buyAuto()">شراء</button></div>
+                <h3>الترقيات اللانهائية</h3>
+                <div class="item"><div>قوة (+5)<br><small>السعر: <span id="p1">100</span></small></div><button class="btn buy" id="b1" onclick="buyPlus5()">شراء</button></div>
+                <div class="item"><div>مضاعف (X2)<br><small>السعر: <span id="p2">5000</span></small></div><button class="btn buy" id="b2" onclick="buyMult2()">تطوير</button></div>
+                <div class="item"><div>تعدين آلي<br><small>السعر: <span id="p3">250</span></small></div><button class="btn buy" id="b3" onclick="buyAuto()">شراء</button></div>
             </div>
             <div class="box">
-                <h3><i class="fas fa-bolt"></i> البوستات المؤقتة</h3>
-                <button class="btn boost-btn" id="b-boost-m" onclick="startManualBoost()">تنشيط X10 ضغط (2000 🪙)</button>
-                <button class="btn boost-btn" id="b-boost-a" onclick="startAutoBoost()" style="background:var(--boost-auto); margin-top:15px">تنشيط X10 تلقائي (3500 🪙)</button>
+                <h3>البوستات المؤقتة</h3>
+                <button class="btn buy" style="width:100%; background:var(--boost-manual)" onclick="startManualBoost()">X10 ضغط (2000 🪙)</button>
+                <button class="btn buy" style="width:100%; background:var(--boost-auto); margin-top:10px" onclick="startAutoBoost()">X10 تلقائي (3500 🪙)</button>
             </div>
         </div>
         <div class="column">
             <div class="box ai-box">
-                <h3><i class="fas fa-brain"></i> المستشار الذكي ✨</h3>
-                <button class="btn ai-btn" onclick="getAIAdvice()"><i class="fas fa-magic"></i> اطلب نصيحة من الذكاء الاصطناعي</button>
-                <div class="ai-response-area" id="ai-response-box">أنا حكيم الكوينز. اضغط على الزر لأعطيك نصيحة بناءً على مستواك! ✨</div>
+                <h3>المستشار الذكي ✨</h3>
+                <button class="btn ai-btn" onclick="getAIAdvice()">اطلب نصيحة ✨</button>
+                <div class="ai-response-area" id="ai-response-box">أنا حكيم الكوينز. اسألني! ✨</div>
             </div>
             <div class="box">
-                <h3><i class="fas fa-gem"></i> قائمة الأشكال المفتوحة</h3>
+                <h3>قائمة الأشكال</h3>
                 <div id="skin-grid"></div>
             </div>
         </div>
@@ -197,10 +183,10 @@
 
     <footer>
         <div class="footer-links">
-            <span onclick="updateStatsModal(); openM('stats-modal')"><i class="fas fa-chart-bar"></i> إحصائياتي</span>
-            <span onclick="openM('about-modal')"><i class="fas fa-info-circle"></i> عن اللعبة</span>
-            <span onclick="openM('privacy-modal')"><i class="fas fa-user-shield"></i> الخصوصية</span>
-            <span onclick="openM('support-modal')"><i class="fas fa-headset"></i> الدعم الفني</span>
+            <span onclick="updateStatsModal(); openM('stats-modal')">إحصائياتي</span>
+            <span onclick="openM('about-modal')">عن اللعبة</span>
+            <span onclick="openM('privacy-modal')">الخصوصية</span>
+            <span onclick="openM('support-modal')">الدعم الفني</span>
         </div>
     </footer>
 
@@ -218,28 +204,21 @@
             let p = gameData.baseClickPower * (boosts.manual > 0 ? 10 : 1);
             gameData.coins += p; gameData.totalCoinsEarned += p; gameData.totalClicks++; gameData.bonusCounter++;
             gainExp(p); createParticle(e.clientX, e.clientY, p);
-            
-            if(gameData.bonusCounter >= 10000) { 
-                gameData.coins += 50000; gameData.totalCoinsEarned += 50000; gameData.bonusCounter = 0; 
-                document.getElementById('ai-response-box').innerHTML = "<strong>🎊 بونص أسطوري!</strong><br>ربحت 50,000 كوين لإكمالك 10,000 ضغطة!";
-            }
+            if(gameData.bonusCounter >= 10000) { gameData.coins += 50000; gameData.totalCoinsEarned += 50000; gameData.bonusCounter = 0; alert("🎁 بونص الأسطورة! +50,000 كوين"); }
             updateUI();
         }
 
         function createParticle(x, y, amt) {
-            const p = document.createElement('div'); p.className = 'particle'; p.innerText = `+${Math.floor(amt).toLocaleString()}`;
+            const p = document.createElement('div'); p.className = 'particle'; p.innerText = `+${Math.floor(amt)}`;
             p.style.left = x + 'px'; p.style.top = y + 'px';
-            p.style.setProperty('--x', (Math.random() - 0.5) * 300 + 'px');
-            p.style.setProperty('--y', (-150 - Math.random() * 200) + 'px');
+            p.style.setProperty('--x', (Math.random() - 0.5) * 200 + 'px');
+            p.style.setProperty('--y', (-150 - Math.random() * 100) + 'px');
             document.body.appendChild(p); setTimeout(() => p.remove(), 800);
         }
 
         function gainExp(amt) {
             gameData.exp += amt;
-            if(gameData.exp >= gameData.expNext) { 
-                gameData.level++; gameData.exp = 0; gameData.expNext = Math.floor(gameData.expNext * 1.8); 
-                renderSkins(); 
-            }
+            if(gameData.exp >= gameData.expNext) { gameData.level++; gameData.exp = 0; gameData.expNext = Math.floor(gameData.expNext * 1.8); renderSkins(); }
         }
 
         function buyPlus5() { if(gameData.coins >= gameData.pPlus5) { gameData.coins -= gameData.pPlus5; gameData.baseClickPower += 5; gameData.pPlus5 = Math.floor(gameData.pPlus5 * 1.5); updateUI(); } }
@@ -250,7 +229,7 @@
 
         function updateUI() {
             document.getElementById('coin-count').innerText = Math.floor(gameData.coins).toLocaleString();
-            document.getElementById('lvl').innerText = gameData.level.toLocaleString();
+            document.getElementById('lvl').innerText = gameData.level;
             document.getElementById('exp-fill').style.width = Math.min((gameData.exp/gameData.expNext*100), 100) + "%";
             document.getElementById('click-bonus-counter').innerText = gameData.bonusCounter.toLocaleString();
             document.getElementById('p1').innerText = gameData.pPlus5.toLocaleString();
@@ -267,11 +246,9 @@
             if(!grid) return;
             grid.innerHTML = '';
             skins.forEach((s, i) => {
-                const div = document.createElement('div');
-                const locked = gameData.level < s.l;
+                const div = document.createElement('div'); const locked = gameData.level < s.l;
                 div.className = `skin-unit ${locked ? 'locked' : ''} ${gameData.currentSkin === i ? 'active' : ''}`;
-                div.innerHTML = s.i;
-                if(!locked) div.onclick = () => { gameData.currentSkin = i; applySkin(i); renderSkins(); };
+                div.innerHTML = s.i; if(!locked) div.onclick = () => { gameData.currentSkin = i; applySkin(i); renderSkins(); };
                 grid.appendChild(div);
             });
         }
@@ -289,40 +266,28 @@
         }
 
         async function getAIAdvice() {
-            const box = document.getElementById('ai-response-box'); 
-            box.innerHTML = "<span style='color:var(--primary-color)'><i class='fas fa-spinner fa-spin'></i> جاري التفكير...</span>";
-            const prompt = `أنا لاعب في لعبة عالم الكوينز، مستواي ${gameData.level} وعندي ${Math.floor(gameData.coins)} كوينز. أعطني نصيحة سريعة في سطر واحد ومضحكة.`;
+            const box = document.getElementById('ai-response-box'); box.innerText = "جاري التفكير...";
+            const prompt = `أنا لاعب في عالم الكوينز، مستواي ${gameData.level} وعندي ${Math.floor(gameData.coins)} كوينز. أعطني نصيحة سريعة في سطر واحد ومضحكة.`;
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
                 const data = await res.json();
-                box.innerHTML = `<strong>نصيحة المستشار:</strong><br/>"${data.candidates[0].content.parts[0].text}" ✨`;
-            } catch(e) { box.innerHTML = "المستشار نائم حالياً! جرب لاحقاً ✨"; }
+                box.innerText = data.candidates[0].content.parts[0].text;
+            } catch(e) { box.innerText = "المستشار نائم حالياً! جرب لاحقاً ✨"; }
         }
 
-        setInterval(() => { if(gameData.autoRate > 0) { let r = (gameData.autoRate * (boosts.auto > 0 ? 10 : 1)); gameData.coins += r; gameData.totalCoinsEarned += r; updateUI(); } }, 1000);
+        setInterval(() => { if(gameData.autoRate > 0) { let r = gameData.autoRate * (boosts.auto > 0 ? 10 : 1); gameData.coins += r; gameData.totalCoinsEarned += r; updateUI(); } }, 1000);
         setInterval(() => {
             gameData.playTimeSeconds++;
             if(boosts.manual > 0) { boosts.manual--; document.getElementById('t-m-val').innerText = boosts.manual; if(boosts.manual === 0) document.getElementById('timer-manual').style.display = 'none'; }
             if(boosts.auto > 0) { boosts.auto--; document.getElementById('t-a-val').innerText = boosts.auto; if(boosts.auto === 0) document.getElementById('timer-auto').style.display = 'none'; }
         }, 1000);
 
-        function save() { localStorage.setItem('coinSaveFinal_V3', JSON.stringify(gameData)); document.getElementById('save-notification').style.opacity = '1'; setTimeout(() => document.getElementById('save-notification').style.opacity = '0', 2500); }
-        function load() { 
-            const s = localStorage.getItem('coinSaveFinal_V3'); 
-            if(s) { 
-                gameData = {...gameData, ...JSON.parse(s)}; 
-                if(!gameData.totalCoinsEarned) gameData.totalCoinsEarned = gameData.coins;
-                if(!gameData.playTimeSeconds) gameData.playTimeSeconds = 0;
-                updateUI(); 
-                applySkin(gameData.currentSkin); 
-            } 
-            renderSkins(); 
-        }
-        setInterval(save, 10000);
-        window.onload = load;
+        function save() { localStorage.setItem('coinSaveFinal_V4', JSON.stringify(gameData)); document.getElementById('save-notification').style.opacity = '1'; setTimeout(() => document.getElementById('save-notification').style.opacity = '0', 2000); }
+        function load() { const s = localStorage.getItem('coinSaveFinal_V4'); if(s) { gameData = {...gameData, ...JSON.parse(s)}; updateUI(); applySkin(gameData.currentSkin); } renderSkins(); }
+        setInterval(save, 15000); window.onload = load;
     </script>
 </body>
 </html>
