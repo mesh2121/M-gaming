@@ -3,245 +3,320 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عالم الكوينز | تحديث القوة القصوى x2</title>
+    <title>عالم الكوينز PRO | الإصدار المطور</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #ffd700;
+            --secondary: #38bdf8;
+            --accent: #f43f5e;
             --bg: #020617;
-            --card: #1e293b;
-            --accent: #38bdf8;
-            --danger: #f43f5e;
-            --power: #a855f7; /* لون الموُضاعف الجديد */
+            --card-bg: #1e293b;
+            --text: #f8fafc;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg);
-            color: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 20px 100px;
-            margin: 0;
-            user-select: none;
-            overflow-x: hidden;
+            color: var(--text);
+            margin: 0; padding: 20px 20px 100px;
+            display: flex; flex-direction: column; align-items: center;
+            user-select: none; overflow-x: hidden;
         }
 
-        /* تحسينات الواجهة - العلوية */
-        .status-bar {
-            width: 100%; max-width: 600px; background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px); padding: 15px; border-radius: 20px;
-            border: 1px solid #334155; position: sticky; top: 10px; z-index: 100;
-        }
-
-        #coin-count {
-            font-size: 3.5rem; color: var(--primary); font-weight: 900;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.4); margin: 5px 0;
-            transition: 0.1s;
-        }
-
-        /* نظام التنبيه للمضاعف x2 */
-        #multiplier-badge {
-            background: linear-gradient(45deg, var(--power), #d8b4fe);
-            color: white; padding: 5px 15px; border-radius: 50px;
-            font-weight: bold; font-size: 1rem; display: none;
-            animation: pulse 1s infinite; margin-top: 5px;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0px var(--power); }
-            50% { transform: scale(1.1); box-shadow: 0 0 20px var(--power); }
-            100% { transform: scale(1); box-shadow: 0 0 0px var(--power); }
-        }
-
-        /* العملة الرئيسية */
-        .coin-wrap { position: relative; margin: 40px 0; cursor: pointer; }
-        .main-coin {
-            width: 200px; height: 200px; border-radius: 50%;
-            font-size: 6rem; display: flex; align-items: center; justify-content: center;
-            background: radial-gradient(circle, #ffde33, #e6b800);
-            border: 8px solid #b38f00; box-shadow: 0 12px 0 #997a00;
-            transition: 0.05s;
-        }
-        .main-coin:active { transform: scale(0.92) translateY(10px); box-shadow: 0 2px 0 #997a00; }
-
-        /* تأثير الشاشة عند تفعيل القوة القصوى */
-        .active-boost-bg { animation: shake 0.5s infinite; background: radial-gradient(circle, #1e1b4b 0%, #020617 100%) !important; }
-        @keyframes shake { 0% { transform: translate(0,0); } 25% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0,0); } }
-
-        /* الأقسام السفلية */
-        .shop-container {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px; width: 100%; max-width: 1000px; margin-top: 20px;
-        }
-        .shop-card {
-            background: var(--card); padding: 20px; border-radius: 18px;
-            border: 1px solid #334155; position: relative; overflow: hidden;
-        }
-        .shop-card.locked { opacity: 0.5; filter: blur(1px); pointer-events: none; }
+        /* رأس الصفحة */
+        .header-box { width: 100%; max-width: 900px; background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid #334155; margin-bottom: 25px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #coin-display { font-size: 3.5rem; color: var(--primary); font-weight: 800; text-shadow: 0 0 15px rgba(255,215,0,0.4); margin: 10px 0; }
         
-        .btn-upgrade {
-            width: 100%; border: none; padding: 12px; border-radius: 10px;
-            font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px;
-            background: #22c55e; color: white;
-        }
-        .btn-upgrade:disabled { background: #475569; cursor: not-allowed; }
+        /* شريط المستوى */
+        .lvl-bar { background: #0f172a; height: 15px; border-radius: 10px; margin: 15px 0; position: relative; overflow: hidden; }
+        #exp-progress { background: linear-gradient(90deg, var(--secondary), #818cf8); height: 100%; width: 0%; transition: 0.4s; }
 
-        /* الجسيمات المتطايرة */
-        .particle {
-            position: fixed; pointer-events: none; font-weight: 900;
-            animation: float 0.7s ease-out forwards; z-index: 1000;
-        }
-        @keyframes float {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5); }
-        }
+        /* منطقة اللعب */
+        .play-zone { position: relative; margin: 40px 0; cursor: pointer; transition: 0.2s; }
+        #main-coin { font-size: 10rem; filter: drop-shadow(0 0 20px rgba(255,215,0,0.3)); transition: 0.1s; }
+        #main-coin:active { transform: scale(0.85); }
+
+        /* نظام المضاعف */
+        .multiplier-badge { background: var(--accent); color: white; padding: 5px 15px; border-radius: 50px; font-weight: bold; display: none; margin-top: 10px; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* الأقسام (الشبكة) */
+        .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; width: 100%; max-width: 1000px; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 20px; border: 1px solid #334155; }
+        .card h3 { margin-top: 0; color: var(--secondary); border-bottom: 1px solid #334155; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+
+        /* الأزرار */
+        .shop-item { background: #0f172a; padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .buy-btn { background: #22c55e; border: none; color: white; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .buy-btn:disabled { background: #475569; cursor: not-allowed; opacity: 0.6; }
+        .buy-btn:hover:not(:disabled) { transform: scale(1.05); filter: brightness(1.1); }
+
+        /* الأشكال (Skins) */
+        .skins-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .skin-box { aspect-ratio: 1; background: #0f172a; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer; border: 2px solid transparent; }
+        .skin-box.active { border-color: var(--primary); background: #1e293b; }
+        .skin-box.locked { opacity: 0.2; cursor: not-allowed; filter: grayscale(1); }
+
+        /* الفوتر والمنبثقات */
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; padding: 15px; display: flex; justify-content: center; gap: 20px; border-top: 1px solid #334155; }
+        footer span { cursor: pointer; color: #94a3b8; font-size: 0.9rem; transition: 0.3s; }
+        footer span:hover { color: var(--primary); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 20px; max-width: 500px; width: 100%; position: relative; }
+        .close-btn { position: absolute; top: 15px; left: 15px; color: #ef4444; font-size: 1.5rem; cursor: pointer; }
+
+        /* تأثيرات النقر */
+        .click-pop { position: fixed; pointer-events: none; color: var(--primary); font-weight: bold; animation: popUp 0.6s ease-out forwards; z-index: 2000; }
+        @keyframes popUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
     </style>
 </head>
-<body id="body">
+<body>
 
-    <div class="status-bar">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div><span id="player-name" style="color:var(--accent)">القائد</span> | ليفل <span id="lvl">1</span></div>
-            <div id="multiplier-badge">⚡ ناتج الضغط x2 مفعل</div>
-        </div>
-        <div style="background: #334155; height: 8px; border-radius: 4px; margin: 10px 0; overflow: hidden;">
-            <div id="exp-bar" style="width: 0%; height: 100%; background: var(--accent); transition: 0.3s;"></div>
-        </div>
-        <div id="coin-count">0</div>
-        <div style="font-size: 0.8rem; color: #94a3b8;">الضغط: <span id="pwr">6</span> | التلقائي: <span id="auto">0</span></div>
-    </div>
-
-    <div class="coin-wrap" onclick="tap(event)">
-        <div class="main-coin" id="coin-btn">💰</div>
-    </div>
-
-    <div class="shop-container">
-        <div class="shop-card" style="border: 2px solid var(--power);">
-            <h3 style="margin-top:0; color:var(--power)">نظام الشحن (x2 للضغط)</h3>
-            <p style="font-size: 0.85rem; color:#94a3b8;">يضاعف أرباح كل ضغطة يدوية للأبد!</p>
-            <button class="btn-upgrade" id="u-mult" onclick="buyMultiplier()" style="background:var(--power)">
-                ترقية للأبد (<span id="p-mult">2000</span>)
-            </button>
-        </div>
-
-        <div class="shop-card">
-            <h3>قوة اليد (+5)</h3>
-            <button class="btn-upgrade" id="u-click" onclick="buyClick()">ترقية (<span id="p-click">50</span>)</button>
-        </div>
-
-        <div class="shop-card">
-            <h3>منجم آلي (+10)</h3>
-            <button class="btn-upgrade" id="u-auto" onclick="buyAuto()">ترقية (<span id="p-auto">150</span>)</button>
+    <div id="welcome-modal" class="modal" style="display: flex;">
+        <div class="modal-content" style="text-align: center;">
+            <h2>مرحباً بك في عالم الكوينز PRO</h2>
+            <p>أدخل اسمك لتبدأ رحلة الثراء:</p>
+            <input type="text" id="username-input" placeholder="اسم الأسطورة..." style="width: 80%; padding: 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; text-align: center; margin-bottom: 20px;">
+            <button class="buy-btn" style="width: 85%; padding: 15px;" onclick="startGame()">ابدأ المغامرة 🚀</button>
         </div>
     </div>
+
+    <div id="info-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title" style="color: var(--primary);"></h2>
+            <div id="modal-body" style="line-height: 1.8;"></div>
+        </div>
+    </div>
+
+    <div class="header-box">
+        <div style="display: flex; justify-content: space-between; color: var(--secondary); font-weight: bold;">
+            <span><i class="fas fa-user"></i> <span id="display-name">اللاعب</span></span>
+            <span><i class="fas fa-star"></i> مستوى <span id="display-lvl">1</span></span>
+        </div>
+        <div class="lvl-bar"><div id="exp-progress"></div></div>
+        <div id="coin-display">0</div>
+        <div id="multiplier-tag" class="multiplier-badge">مضاعف X2 نشط! 🔥</div>
+        <div style="font-size: 0.9rem; color: #64748b;">
+            قوة الضغطة: <span id="stat-power">1</span> | التعدين الآلي: <span id="stat-auto">0</span>/ث
+        </div>
+    </div>
+
+    <div class="play-zone" onclick="handleMainClick(event)">
+        <div id="main-coin">💰</div>
+    </div>
+
+    <div class="game-grid">
+        <div class="card">
+            <h3><i class="fas fa-shopping-cart"></i> المتجر والتطويرات</h3>
+            <div class="shop-item">
+                <div>ترقية النقر (+2)<br><small id="price-click">السعر: 50</small></div>
+                <button class="buy-btn" id="btn-upgrade-click" onclick="buyUpgrade('click')">تطوير</button>
+            </div>
+            <div class="shop-item">
+                <div>تعدين آلي (+5)<br><small id="price-auto">السعر: 150</small></div>
+                <button class="buy-btn" id="btn-upgrade-auto" onclick="buyUpgrade('auto')">تطوير</button>
+            </div>
+            <div class="shop-item" style="border: 1px solid var(--accent);">
+                <div>بوست مضاعف X2 (30 ثانية)<br><small id="price-boost">السعر: 1000</small></div>
+                <button class="buy-btn" id="btn-upgrade-boost" onclick="activateBoost()" style="background: var(--accent);">تنشيط</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-tshirt"></i> الأشكال المفتوحة</h3>
+            <div class="skins-grid" id="skins-container">
+                </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-trophy"></i> قائمة الأساطير</h3>
+            <div id="leaderboard-list">
+                <div style="padding: 10px; background: #0f172a; border-radius: 8px; margin-bottom: 5px;">1. أنت (جاري الحساب...)</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <span onclick="showInfo('about')">من نحن</span>
+        <span onclick="showInfo('privacy')">سياسة الخصوصية</span>
+        <span onclick="showInfo('support')">الدعم الفني</span>
+    </footer>
 
     <script>
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        function sfx(f, t, d, v) {
-            try { if(ctx.state==='suspended')ctx.resume(); const o=ctx.createOscillator(), g=ctx.createGain();
-            o.type=t; o.frequency.setValueAtTime(f, ctx.currentTime); g.gain.setValueAtTime(v, ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime+d); o.connect(g); g.connect(ctx.destination);
-            o.start(); o.stop(ctx.currentTime+d); } catch(e){}
-        }
-
-        let data = {
-            coins: 0, click: 6, auto: 0, mult: 1, 
-            pClick: 50, pAuto: 150, pMult: 2000,
-            lvl: 1, exp: 0, expN: 100
+        // بيانات اللعبة
+        let state = {
+            coins: 0, clickPower: 1, autoRate: 0, 
+            lvl: 1, exp: 0, expNeeded: 100,
+            multiplier: 1, isBoostActive: false,
+            prices: { click: 50, auto: 150, boost: 1000 },
+            name: "لاعب", currentSkin: "💰"
         };
 
-        function tap(e) {
-            sfx(500, 'sine', 0.1, 0.1);
-            let gain = data.click * data.mult;
-            data.coins += gain;
-            data.exp += gain;
+        const skins = [
+            {icon: "💰", minLvl: 1}, {icon: "🪙", minLvl: 3}, {icon: "🔥", minLvl: 5},
+            {icon: "💎", minLvl: 8}, {icon: "⚡", minLvl: 12}, {icon: "👑", minLvl: 15},
+            {icon: "🚀", minLvl: 20}, {icon: "🌌", minLvl: 25}, {icon: "🧿", minLvl: 30},
+            {icon: "🪐", minLvl: 40}
+        ];
+
+        // بدء اللعبة
+        function startGame() {
+            const input = document.getElementById('username-input').value;
+            if(input.trim() !== "") {
+                state.name = input;
+                document.getElementById('display-name').innerText = input;
+                document.getElementById('welcome-modal').style.display = 'none';
+                saveData();
+            }
+        }
+
+        // التعامل مع النقرات
+        function handleMainClick(e) {
+            let gain = state.clickPower * state.multiplier;
+            state.coins += gain;
+            addExp(gain * 0.5);
+            showClickEffect(e.clientX, e.clientY, gain);
+            updateUI();
+        }
+
+        function showClickEffect(x, y, val) {
+            const el = document.createElement('div');
+            el.className = 'click-pop';
+            el.innerText = `+${val}`;
+            el.style.left = `${x}px`;
+            el.style.top = `${y}px`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 600);
+        }
+
+        // نظام التطوير
+        function buyUpgrade(type) {
+            if(state.coins >= state.prices[type]) {
+                state.coins -= state.prices[type];
+                if(type === 'click') {
+                    state.clickPower += 2;
+                    state.prices.click = Math.floor(state.prices.click * 1.6);
+                } else {
+                    state.autoRate += 5;
+                    state.prices.auto = Math.floor(state.prices.auto * 1.7);
+                }
+                updateUI();
+                saveData();
+            }
+        }
+
+        // المفاعلات والبوست
+        function activateBoost() {
+            if(state.coins >= state.prices.boost && !state.isBoostActive) {
+                state.coins -= state.prices.boost;
+                state.multiplier = 2;
+                state.isBoostActive = true;
+                document.getElementById('multiplier-tag').style.display = 'block';
+                
+                setTimeout(() => {
+                    state.multiplier = 1;
+                    state.isBoostActive = false;
+                    document.getElementById('multiplier-tag').style.display = 'none';
+                    updateUI();
+                }, 30000); // 30 ثانية
+                updateUI();
+            }
+        }
+
+        // نظام المستوى
+        function addExp(val) {
+            state.exp += val;
+            if(state.exp >= state.expNeeded) {
+                state.lvl++;
+                state.exp = 0;
+                state.expNeeded = Math.floor(state.expNeeded * 1.5);
+                alert(`مبروك! وصلت للمستوى ${state.lvl} 🎉`);
+            }
+        }
+
+        // تحديث الواجهة
+        function updateUI() {
+            document.getElementById('coin-display').innerText = Math.floor(state.coins);
+            document.getElementById('display-lvl').innerText = state.lvl;
+            document.getElementById('stat-power').innerText = state.clickPower * state.multiplier;
+            document.getElementById('stat-auto').innerText = state.autoRate;
             
-            checkLvl();
-            createPart(e.clientX, e.clientY, gain);
-            update();
-        }
-
-        function createPart(x, y, amt) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.innerText = `+${amt}`;
-            p.style.left = x + 'px'; p.style.top = y + 'px';
-            p.style.color = data.mult > 1 ? 'var(--power)' : 'var(--primary)';
-            p.style.setProperty('--tx', (Math.random()-0.5)*200 + 'px');
-            p.style.setProperty('--ty', (-150-Math.random()*100) + 'px');
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 700);
-        }
-
-        function buyMultiplier() {
-            if(data.coins >= data.pMult) {
-                data.coins -= data.pMult;
-                data.mult = 2; // تفعيل الضرب في 2
-                data.pMult = Math.floor(data.pMult * 5); // الترقية القادمة أغلى بكثير
-                sfx(800, 'square', 0.2, 0.1);
-                document.getElementById('body').classList.add('active-boost-bg');
-                update();
-            }
-        }
-
-        function buyClick() {
-            if(data.coins >= data.pClick) {
-                data.coins -= data.pClick; data.click += 5;
-                data.pClick = Math.floor(data.pClick * 1.5);
-                sfx(400, 'triangle', 0.1, 0.1); update();
-            }
-        }
-
-        function buyAuto() {
-            if(data.coins >= data.pAuto) {
-                data.coins -= data.pAuto; data.auto += 10;
-                data.pAuto = Math.floor(data.pAuto * 1.6);
-                sfx(300, 'sawtooth', 0.1, 0.05); update();
-            }
-        }
-
-        function checkLvl() {
-            if(data.exp >= data.expN) {
-                data.lvl++; data.exp = 0; data.expN = Math.floor(data.expN * 1.8);
-                sfx(600, 'sine', 0.5, 0.2);
-                alert("مبروك! ارتفع مستواك لـ " + data.lvl);
-            }
-        }
-
-        function update() {
-            document.getElementById('coin-count').innerText = Math.floor(data.coins);
-            document.getElementById('lvl').innerText = data.lvl;
-            document.getElementById('exp-bar').style.width = (data.exp/data.expN*100) + "%";
-            document.getElementById('pwr').innerText = data.click * data.mult;
-            document.getElementById('auto').innerText = data.auto;
+            document.getElementById('price-click').innerText = `السعر: ${state.prices.click}`;
+            document.getElementById('price-auto').innerText = `السعر: ${state.prices.auto}`;
             
-            document.getElementById('p-click').innerText = data.pClick;
-            document.getElementById('p-auto').innerText = data.pAuto;
-            document.getElementById('p-mult').innerText = data.pMult;
-
-            document.getElementById('u-click').disabled = data.coins < data.pClick;
-            document.getElementById('u-auto').disabled = data.coins < data.pAuto;
-            document.getElementById('u-mult').disabled = data.coins < data.pMult;
-
-            if(data.mult > 1) document.getElementById('multiplier-badge').style.display = 'block';
+            document.getElementById('exp-progress').style.width = `${(state.exp / state.expNeeded) * 100}%`;
             
-            localStorage.setItem('coinGameV4', JSON.stringify(data));
+            document.getElementById('btn-upgrade-click').disabled = state.coins < state.prices.click;
+            document.getElementById('btn-upgrade-auto').disabled = state.coins < state.prices.auto;
+            document.getElementById('btn-upgrade-boost').disabled = state.coins < state.prices.boost || state.isBoostActive;
+
+            renderSkins();
         }
 
+        function renderSkins() {
+            const container = document.getElementById('skins-container');
+            container.innerHTML = '';
+            skins.forEach(s => {
+                const box = document.createElement('div');
+                const isLocked = state.lvl < s.minLvl;
+                box.className = `skin-box ${isLocked ? 'locked' : ''} ${state.currentSkin === s.icon ? 'active' : ''}`;
+                box.innerHTML = s.icon;
+                if(!isLocked) {
+                    box.onclick = () => {
+                        state.currentSkin = s.icon;
+                        document.getElementById('main-coin').innerHTML = s.icon;
+                        updateUI();
+                    };
+                }
+                container.appendChild(box);
+            });
+        }
+
+        // التعدين الآلي
         setInterval(() => {
-            if(data.auto > 0) {
-                data.coins += data.auto;
-                data.exp += data.auto * 0.1;
-                checkLvl(); update();
+            if(state.autoRate > 0) {
+                state.coins += (state.autoRate / 10);
+                updateUI();
             }
-        }, 1000);
+        }, 100);
 
-        window.onload = () => {
-            const saved = localStorage.getItem('coinGameV4');
-            if(saved) data = JSON.parse(saved);
-            update();
+        // معلومات الأزرار السفلية
+        const infoData = {
+            about: { title: "من نحن", body: "عالم الكوينز هو مشروع تطوير ألعاب ويب عربي يهدف لتقديم تجارب ممتعة وبسيطة للمستخدمين. تم تطوير هذه اللعبة باستخدام أحدث تقنيات الويب لضمان السرعة والمرح." },
+            privacy: { title: "سياسة الخصوصية", body: "نحن نحترم خصوصيتك تماماً. جميع بيانات اللعبة (الاسم، العملات، المستوى) تُحفظ محلياً على متصفحك فقط، ولا يتم إرسال أي بيانات لخوادم خارجية." },
+            support: { title: "الدعم الفني", body: "هل واجهت مشكلة؟ نحن هنا للمساعدة! يمكنك التواصل معنا عبر حساباتنا في تيك توك أو تويتر للحصول على دعم فوري أو اقتراح ميزات جديدة." }
         };
+
+        function showInfo(key) {
+            document.getElementById('modal-title').innerText = infoData[key].title;
+            document.getElementById('modal-body').innerText = infoData[key].body;
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('info-modal').style.display = 'none';
+        }
+
+        // حفظ وتحميل البيانات
+        function saveData() {
+            localStorage.setItem('coinGameSave_PRO', JSON.stringify(state));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('coinGameSave_PRO');
+            if(saved) {
+                state = JSON.parse(saved);
+                document.getElementById('display-name').innerText = state.name;
+                document.getElementById('main-coin').innerHTML = state.currentSkin;
+                document.getElementById('welcome-modal').style.display = 'none';
+                updateUI();
+            }
+        }
+
+        window.onload = loadData;
     </script>
 </body>
 </html>
