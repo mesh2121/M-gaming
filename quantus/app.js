@@ -44,6 +44,7 @@ const translations = {
     hudQuestion: 'السؤال',
     hudScore: 'النتيجة',
     hudTime: 'الوقت',
+    confirmBtn: 'تأكيد',
 
     resultTitle: 'انتهت اللعبة!',
     playAgainBtn: 'العب مرة أخرى',
@@ -77,6 +78,7 @@ const translations = {
     hudQuestion: 'Question',
     hudScore: 'Score',
     hudTime: 'Time',
+    confirmBtn: 'Confirm',
 
     resultTitle: 'Game Over!',
     playAgainBtn: 'Play Again',
@@ -85,13 +87,19 @@ const translations = {
 };
 
 /* ------------------------- 2) إعدادات كل طور -------------------------
-   تتحكم بسرعة العد التنازلي وعدد الأسئلة. نطاق الأرقام الفعلي لكل نمط
+   تتحكم بسرعة العد التنازلي لكل سؤال. نطاق الأرقام الفعلي لكل نمط
    محدد داخل مولّد ذلك النمط نفسه لأن كل نمط له نطاقات مختلفة تمامًا. */
 const DIFFICULTY_CONFIG = {
-  easy: { countdownSeconds: 15, questionCount: 10 },
-  medium: { countdownSeconds: 10, questionCount: 15 },
-  hard: { countdownSeconds: 8, questionCount: 20 },
+  easy: { countdownSeconds: 15 },
+  medium: { countdownSeconds: 10 },
+  hard: { countdownSeconds: 6 },
 };
+
+// عدد الأسئلة بكل جولة — ثابت لكل الأطوار
+const ROUND_LENGTH = 10;
+
+// مدة عرض التغذية الراجعة (أخضر/أحمر) قبل الانتقال للسؤال التالي
+const FEEDBACK_DELAY_MS = 500;
 
 /* ------------------------- 3) كائن الحالة (State) -------------------------
    حالة اللعب الحي (currentQuestion, score...) هنا أيضًا — بدون أي مصفوفة
@@ -125,6 +133,9 @@ const hudTimeEl = document.getElementById('hud-time');
 const timerBarFillEl = document.getElementById('timer-bar-fill');
 const questionTextEl = document.getElementById('question-text');
 const optionsGridEl = document.getElementById('options-grid');
+const inputAnswerAreaEl = document.getElementById('input-answer-area');
+const answerInputEl = document.getElementById('answer-input');
+const confirmAnswerBtn = document.getElementById('confirm-answer-btn');
 const gamePlayViewEl = document.getElementById('game-play-view');
 const gameResultViewEl = document.getElementById('game-result-view');
 const resultScoreValueEl = document.getElementById('result-score-value');
@@ -389,10 +400,8 @@ function startGame() {
 }
 
 function loadNextQuestion() {
-  const config = DIFFICULTY_CONFIG[state.difficulty];
-
-  if (state.questionIndex >= config.questionCount) {
-    endGame(config);
+  if (state.questionIndex >= ROUND_LENGTH) {
+    endGame();
     return;
   }
 
@@ -400,23 +409,44 @@ function loadNextQuestion() {
   state.currentQuestion = generateQuestion(state.mode, state.difficulty);
   state.questionIndex++;
 
-  renderQuestion(config);
-  startTimer(config.countdownSeconds);
+  renderQuestion();
+  startTimer(DIFFICULTY_CONFIG[state.difficulty].countdownSeconds);
 }
 
-function renderQuestion(config) {
-  hudQuestionCountEl.textContent = `${state.questionIndex} / ${config.questionCount}`;
+function renderQuestion() {
+  hudQuestionCountEl.textContent = `${state.questionIndex} / ${ROUND_LENGTH}`;
   questionTextEl.textContent = state.currentQuestion.question;
 
-  optionsGridEl.innerHTML = '';
-  state.currentQuestion.options.forEach((option) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'option-card answer-option';
-    btn.textContent = option;
-    btn.addEventListener('click', () => handleAnswerSelect(option, btn));
-    optionsGridEl.appendChild(btn);
-  });
+  if (state.currentQuestion.options) {
+    // اختيار من متعدد
+    inputAnswerAreaEl.classList.add('hidden');
+    optionsGridEl.classList.remove('hidden');
+    optionsGridEl.innerHTML = '';
+    state.currentQuestion.options.forEach((option) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'option-card answer-option';
+      btn.textContent = option;
+      btn.addEventListener('click', () => finishQuestion(option, btn));
+      optionsGridEl.appendChild(btn);
+    });
+  } else {
+    // إدخال مباشر
+    optionsGridEl.classList.add('hidden');
+    optionsGridEl.innerHTML = '';
+    inputAnswerAreaEl.classList.remove('hidden');
+    answerInputEl.value = '';
+    answerInputEl.disabled = false;
+    answerInputEl.classList.remove('correct', 'wrong');
+    confirmAnswerBtn.disabled = false;
+    answerInputEl.focus();
+  }
+}
+
+function handleInputConfirm() {
+  if (answerInputEl.disabled) return;
+  const value = answerInputEl.value === '' ? null : Number(answerInputEl.value);
+  finishQuestion(value, answerInputEl);
 }
 
 function startTimer(totalSeconds) {
@@ -430,7 +460,7 @@ function startTimer(totalSeconds) {
 
     if (state.timeLeft <= 0) {
       stopTimer();
-      handleAnswerSelect(null, null); // انتهاء الوقت = إجابة خاطئة
+      finishQuestion(null, null); // انتهاء الوقت = إجابة خاطئة تلقائيًا
     }
   }, 1000);
 }
@@ -450,23 +480,31 @@ function updateTimerUI(secondsLeft, totalSeconds) {
   timerBarFillEl.classList.toggle('low-time', clamped <= totalSeconds * 0.3);
 }
 
-function handleAnswerSelect(selectedValue, selectedBtn) {
+/**
+ * ينهي السؤال الحالي (سواء بضغطة خيار، تأكيد إدخال، أو انتهاء الوقت)،
+ * يعرض تغذية راجعة سريعة، ثم ينتقل للسؤال التالي عبر generateQuestion().
+ * @param {number|null} selectedValue - إجابة اللاعب، أو null إذا انتهى الوقت بدون إجابة
+ * @param {HTMLElement|null} feedbackEl - العنصر اللي يُلوَّن (زر الخيار أو حقل الإدخال)
+ */
+function finishQuestion(selectedValue, feedbackEl) {
   stopTimer();
 
-  const allButtons = optionsGridEl.querySelectorAll('.answer-option');
-  allButtons.forEach((btn) => (btn.disabled = true));
+  // تعطيل كل عناصر الإدخال (أزرار أو حقل الإدخال) لمنع إجابة مزدوجة لنفس السؤال
+  optionsGridEl.querySelectorAll('.answer-option').forEach((btn) => (btn.disabled = true));
+  answerInputEl.disabled = true;
+  confirmAnswerBtn.disabled = true;
 
   const isCorrect = selectedValue !== null && checkAnswer(selectedValue, state.currentQuestion.answer);
 
   if (isCorrect) {
     state.score++;
-    if (selectedBtn) selectedBtn.classList.add('correct');
-  } else if (selectedBtn) {
-    selectedBtn.classList.add('wrong');
+    if (feedbackEl) feedbackEl.classList.add('correct');
+  } else if (feedbackEl) {
+    feedbackEl.classList.add('wrong');
   }
 
-  // نبرز الإجابة الصحيحة دائمًا حتى لو اللاعب أخطأ أو ما جاوب
-  allButtons.forEach((btn) => {
+  // باختيار من متعدد: نبرز الإجابة الصحيحة دائمًا حتى لو اللاعب أخطأ أو ما جاوب
+  optionsGridEl.querySelectorAll('.answer-option').forEach((btn) => {
     if (Number(btn.textContent) === state.currentQuestion.answer) {
       btn.classList.add('correct');
     }
@@ -474,14 +512,15 @@ function handleAnswerSelect(selectedValue, selectedBtn) {
 
   hudScoreEl.textContent = state.score;
 
-  setTimeout(loadNextQuestion, 900);
+  // نمسح الـ interval فورًا (فوق) ثم نمنح وقت قصير لعرض اللون قبل توليد السؤال التالي
+  setTimeout(loadNextQuestion, FEEDBACK_DELAY_MS);
 }
 
-function endGame(config) {
+function endGame() {
   gamePlayViewEl.classList.add('hidden');
   gameResultViewEl.classList.remove('hidden');
   resultScoreValueEl.textContent = state.score;
-  resultTotalValueEl.textContent = config.questionCount;
+  resultTotalValueEl.textContent = ROUND_LENGTH;
 }
 
 /* ===================== 9) الترجمة الديناميكية ===================== */
@@ -522,6 +561,10 @@ function toggleSound() {
 
 /* ===================== التنقل بين الشاشات ===================== */
 function goToScreen(screenName) {
+  // نوقف أي مؤقت شغال قبل أي تنقل بين الشاشات — يمنع تراكم عدة intervals
+  // (لو كنا بشاشة اللعب وطالعين منها لغيرها). ما يأثر إذا ما فيه مؤقت شغال أصلًا.
+  stopTimer();
+
   state.currentScreen = screenName;
   screens.forEach((screen) => {
     screen.classList.toggle('active', screen.dataset.screen === screenName);
@@ -545,12 +588,9 @@ function initEvents() {
     btn.addEventListener('click', () => goToScreen('difficulty'));
   });
 
-  // إيقاف اللعبة والرجوع لشاشة الأنماط (من زر الرجوع أثناء اللعب)
+  // الرجوع لشاشة الأنماط أثناء اللعب — goToScreen توقف المؤقت تلقائيًا
   document.querySelectorAll('[data-action="quit-game"]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      stopTimer();
-      goToScreen('mode');
-    });
+    btn.addEventListener('click', () => goToScreen('mode'));
   });
 
   // اختيار الطور
@@ -572,6 +612,12 @@ function initEvents() {
 
   document.getElementById('play-again-btn').addEventListener('click', startGame);
   document.getElementById('back-to-modes-btn').addEventListener('click', () => goToScreen('mode'));
+
+  // نمط الإدخال المباشر (options === null): زر التأكيد أو مفتاح Enter
+  confirmAnswerBtn.addEventListener('click', handleInputConfirm);
+  answerInputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleInputConfirm();
+  });
 }
 
 /* ===================== نقطة الانطلاق ===================== */

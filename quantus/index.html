@@ -131,7 +131,21 @@
         <!-- منطقة عرض السؤال والخيارات -->
         <div id="game-play-view" class="game-play-view">
           <p id="question-text" class="question-text">-</p>
+
+          <!-- اختيار من متعدد (تُبنى الأزرار ديناميكيًا) -->
           <div id="options-grid" class="options-grid answer-grid"></div>
+
+          <!-- إدخال مباشر (يُستخدم إذا كانت options تساوي null) -->
+          <div id="input-answer-area" class="input-answer-area hidden">
+            <input
+              type="number"
+              id="answer-input"
+              class="answer-input"
+              inputmode="numeric"
+              autocomplete="off"
+            />
+            <button id="confirm-answer-btn" class="btn btn-primary" type="button" data-i18n="confirmBtn"></button>
+          </div>
         </div>
 
         <!-- شاشة النتيجة النهائية -->

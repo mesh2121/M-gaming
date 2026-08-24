@@ -375,6 +375,54 @@ html[dir="rtl"] .btn-back { align-self: flex-end; }
   color: var(--danger);
 }
 
+/* ===================== حقل الإدخال المباشر ===================== */
+.input-answer-area {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.answer-input {
+  width: 160px;
+  padding: 16px;
+  font-size: 1.6rem;
+  font-family: inherit;
+  text-align: center;
+  direction: ltr;
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-light);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.answer-input:focus {
+  border-color: var(--accent);
+}
+
+.answer-input.correct {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.answer-input.wrong {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* إخفاء أسهم الزيادة/النقصان الافتراضية لحقل الرقم */
+.answer-input::-webkit-outer-spin-button,
+.answer-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.answer-input[type='number'] {
+  -moz-appearance: textfield;
+}
+
 .game-result-view {
   display: flex;
   flex-direction: column;
