@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantus</title>
+
+  <!-- خطوط جوجل: Cairo يدعم العربي والإنجليزي معًا -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============ شريط علوي ثابت: تبديل اللغة + الصوت ============ -->
+  <header class="top-bar">
+    <button id="lang-toggle-btn" class="icon-btn" type="button" aria-label="Toggle language">
+      <span id="lang-toggle-label">EN</span>
+    </button>
+    <button id="sound-toggle-btn" class="icon-btn" type="button" aria-label="Toggle sound">
+      <span id="sound-icon">🔊</span>
+    </button>
+  </header>
+
+  <main id="app">
+
+    <!-- ============ شاشة البداية ============ -->
+    <section id="screen-start" class="screen active" data-screen="start">
+      <div class="screen-inner start-inner">
+        <h1 class="game-title">Quantus</h1>
+        <p class="game-subtitle" data-i18n="startSubtitle"></p>
+
+        <div class="start-actions">
+          <button id="start-game-btn" class="btn btn-primary btn-lg" type="button" data-i18n="startBtn"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ شاشة اختيار الطور (Difficulty) ============ -->
+    <section id="screen-difficulty" class="screen" data-screen="difficulty">
+      <div class="screen-inner">
+        <button class="btn btn-back" type="button" data-action="back-to-start" data-i18n="backBtn"></button>
+
+        <h2 class="screen-title" data-i18n="difficultyTitle"></h2>
+        <p class="screen-subtitle" data-i18n="difficultySubtitle"></p>
+
+        <div class="options-grid difficulty-grid">
+          <button class="option-card" type="button" data-difficulty="easy">
+            <span class="option-icon">🟢</span>
+            <span class="option-label" data-i18n="difficultyEasy"></span>
+            <span class="option-desc" data-i18n="difficultyEasyDesc"></span>
+          </button>
+          <button class="option-card" type="button" data-difficulty="medium">
+            <span class="option-icon">🟡</span>
+            <span class="option-label" data-i18n="difficultyMedium"></span>
+            <span class="option-desc" data-i18n="difficultyMediumDesc"></span>
+          </button>
+          <button class="option-card" type="button" data-difficulty="hard">
+            <span class="option-icon">🔴</span>
+            <span class="option-label" data-i18n="difficultyHard"></span>
+            <span class="option-desc" data-i18n="difficultyHardDesc"></span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ شاشة اختيار نمط اللعب (Game Mode) ============ -->
+    <section id="screen-mode" class="screen" data-screen="mode">
+      <div class="screen-inner">
+        <button class="btn btn-back" type="button" data-action="back-to-difficulty" data-i18n="backBtn"></button>
+
+        <h2 class="screen-title" data-i18n="modeTitle"></h2>
+        <p class="screen-subtitle" data-i18n="modeSubtitle"></p>
+
+        <div class="options-grid mode-grid">
+          <button class="option-card" type="button" data-mode="addition">
+            <span class="option-icon">➕</span>
+            <span class="option-label" data-i18n="modeAddition"></span>
+          </button>
+          <button class="option-card" type="button" data-mode="subtraction">
+            <span class="option-icon">➖</span>
+            <span class="option-label" data-i18n="modeSubtraction"></span>
+          </button>
+          <button class="option-card" type="button" data-mode="multiplication">
+            <span class="option-icon">✖️</span>
+            <span class="option-label" data-i18n="modeMultiplication"></span>
+          </button>
+          <button class="option-card" type="button" data-mode="division">
+            <span class="option-icon">➗</span>
+            <span class="option-label" data-i18n="modeDivision"></span>
+          </button>
+          <button class="option-card" type="button" data-mode="pattern">
+            <span class="option-icon">🔢</span>
+            <span class="option-label" data-i18n="modePattern"></span>
+          </button>
+          <button class="option-card" type="button" data-mode="exponents">
+            <span class="option-icon">💥</span>
+            <span class="option-label" data-i18n="modeExponents"></span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ شاشة اللعب (placeholder — تُبنى لاحقًا) ============ -->
+    <section id="screen-game" class="screen" data-screen="game">
+      <div class="screen-inner">
+        <button class="btn btn-back" type="button" data-action="back-to-mode" data-i18n="backBtn"></button>
+
+        <h2 class="screen-title" data-i18n="gamePlaceholderTitle"></h2>
+        <p class="screen-subtitle" data-i18n="gamePlaceholderText"></p>
+
+        <div class="game-summary">
+          <p>
+            <span data-i18n="summaryDifficulty"></span>:
+            <strong id="summary-difficulty">-</strong>
+          </p>
+          <p>
+            <span data-i18n="summaryMode"></span>:
+            <strong id="summary-mode">-</strong>
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
