@@ -103,23 +103,47 @@
       </div>
     </section>
 
-    <!-- ============ شاشة اللعب (placeholder — تُبنى لاحقًا) ============ -->
+    <!-- ============ شاشة اللعب ============ -->
     <section id="screen-game" class="screen" data-screen="game">
-      <div class="screen-inner">
-        <button class="btn btn-back" type="button" data-action="back-to-mode" data-i18n="backBtn"></button>
+      <div class="screen-inner game-inner">
+        <button class="btn btn-back" type="button" data-action="quit-game" data-i18n="backBtn"></button>
 
-        <h2 class="screen-title" data-i18n="gamePlaceholderTitle"></h2>
-        <p class="screen-subtitle" data-i18n="gamePlaceholderText"></p>
+        <!-- شريط الحالة: رقم السؤال، النتيجة، الوقت المتبقي -->
+        <div class="game-hud">
+          <div class="hud-item">
+            <span class="hud-label" data-i18n="hudQuestion"></span>
+            <span id="hud-question-count">-</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label" data-i18n="hudScore"></span>
+            <span id="hud-score">0</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label" data-i18n="hudTime"></span>
+            <span id="hud-time">-</span>
+          </div>
+        </div>
 
-        <div class="game-summary">
-          <p>
-            <span data-i18n="summaryDifficulty"></span>:
-            <strong id="summary-difficulty">-</strong>
+        <div class="timer-bar-track">
+          <div id="timer-bar-fill" class="timer-bar-fill"></div>
+        </div>
+
+        <!-- منطقة عرض السؤال والخيارات -->
+        <div id="game-play-view" class="game-play-view">
+          <p id="question-text" class="question-text">-</p>
+          <div id="options-grid" class="options-grid answer-grid"></div>
+        </div>
+
+        <!-- شاشة النتيجة النهائية -->
+        <div id="game-result-view" class="game-result-view hidden">
+          <h2 class="screen-title" data-i18n="resultTitle"></h2>
+          <p class="result-score">
+            <span id="result-score-value">0</span> / <span id="result-total-value">0</span>
           </p>
-          <p>
-            <span data-i18n="summaryMode"></span>:
-            <strong id="summary-mode">-</strong>
-          </p>
+          <div class="result-actions">
+            <button id="play-again-btn" class="btn btn-primary" type="button" data-i18n="playAgainBtn"></button>
+            <button id="back-to-modes-btn" class="btn btn-back" type="button" data-i18n="backToModesBtn"></button>
+          </div>
         </div>
       </div>
     </section>

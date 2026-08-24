@@ -2,11 +2,20 @@
 
 /* ===================================================================
    Quantus — app.js
-   إدارة الحالة، الترجمة، والتنقل بين الشاشات.
-   منطق الأسئلة نفسه غير مبني بعد — شاشة اللعب هنا placeholder فقط.
+
+   تنظيم الملف:
+   1. الترجمة (translations)
+   2. إعدادات الطور (DIFFICULTY_CONFIG)
+   3. الحالة العامة (state)
+   4. عناصر الـ DOM
+   5. أدوات رياضية/عشوائية مساعدة
+   6. مولّدات الأسئلة لكل نمط (دوال نقية — لا تلمس DOM ولا state)
+   7. generateQuestion() + checkAnswer() — الواجهة العامة لمحرك الأسئلة
+   8. Game Runtime — يدير اللعب الحي (سؤال واحد بالذاكرة، مؤقت، نتيجة)
+   9. التنقل بين الشاشات + ربط الأحداث + نقطة الانطلاق
    =================================================================== */
 
-/* ------------------------- كائن الترجمة ------------------------- */
+/* ------------------------- 1) كائن الترجمة ------------------------- */
 const translations = {
   ar: {
     startSubtitle: 'تحديات رياضية سريعة، اختبر سرعة بديهتك',
@@ -32,10 +41,13 @@ const translations = {
     modePattern: 'إيجاد النمط',
     modeExponents: 'الأسس',
 
-    gamePlaceholderTitle: 'شاشة اللعب',
-    gamePlaceholderText: 'منطق الأسئلة سيُبنى في مرحلة قادمة 🚧',
-    summaryDifficulty: 'الطور المختار',
-    summaryMode: 'النمط المختار',
+    hudQuestion: 'السؤال',
+    hudScore: 'النتيجة',
+    hudTime: 'الوقت',
+
+    resultTitle: 'انتهت اللعبة!',
+    playAgainBtn: 'العب مرة أخرى',
+    backToModesBtn: 'الأنماط',
   },
 
   en: {
@@ -62,59 +74,428 @@ const translations = {
     modePattern: 'Pattern Finding',
     modeExponents: 'Exponents',
 
-    gamePlaceholderTitle: 'Game Screen',
-    gamePlaceholderText: 'Question logic will be built in the next stage 🚧',
-    summaryDifficulty: 'Selected difficulty',
-    summaryMode: 'Selected mode',
+    hudQuestion: 'Question',
+    hudScore: 'Score',
+    hudTime: 'Time',
+
+    resultTitle: 'Game Over!',
+    playAgainBtn: 'Play Again',
+    backToModesBtn: 'Modes',
   },
 };
 
-/* ------------------------- إعدادات كل طور (placeholder) -------------------------
-   ستُستخدم لاحقًا عند بناء منطق الأسئلة: سرعة العد التنازلي، نطاق الأرقام، وعدد الأسئلة. */
+/* ------------------------- 2) إعدادات كل طور -------------------------
+   تتحكم بسرعة العد التنازلي وعدد الأسئلة. نطاق الأرقام الفعلي لكل نمط
+   محدد داخل مولّد ذلك النمط نفسه لأن كل نمط له نطاقات مختلفة تمامًا. */
 const DIFFICULTY_CONFIG = {
-  easy: { countdownSeconds: 15, numberRange: [1, 10], questionCount: 10 },
-  medium: { countdownSeconds: 10, numberRange: [1, 50], questionCount: 15 },
-  hard: { countdownSeconds: 6, numberRange: [1, 100], questionCount: 20 },
+  easy: { countdownSeconds: 15, questionCount: 10 },
+  medium: { countdownSeconds: 10, questionCount: 15 },
+  hard: { countdownSeconds: 8, questionCount: 20 },
 };
 
-/* ------------------------- كائن الحالة (State) ------------------------- */
+/* ------------------------- 3) كائن الحالة (State) -------------------------
+   حالة اللعب الحي (currentQuestion, score...) هنا أيضًا — بدون أي مصفوفة
+   تتراكم فيها كل الأسئلة، فقط آخر سؤالين لمنع التكرار المباشر. */
 const state = {
   lang: localStorage.getItem('quantus_lang') || 'ar',
   soundOn: localStorage.getItem('quantus_sound') !== 'off',
   difficulty: null,
   mode: null,
   currentScreen: 'start',
+
+  currentQuestion: null, // السؤال الحالي فقط — يُستبدل بالكامل عند كل سؤال جديد
+  recentQuestions: [], // آخر سؤالين (نص) فقط، لمنع تكرار نفس السؤال مباشرة
+  score: 0,
+  questionIndex: 0,
+  timerId: null,
+  timeLeft: 0,
 };
 
-/* ------------------------- عناصر DOM ثابتة ------------------------- */
+/* ------------------------- 4) عناصر DOM ثابتة ------------------------- */
 const htmlEl = document.documentElement;
 const langToggleBtn = document.getElementById('lang-toggle-btn');
 const langToggleLabel = document.getElementById('lang-toggle-label');
 const soundToggleBtn = document.getElementById('sound-toggle-btn');
 const soundIcon = document.getElementById('sound-icon');
 const screens = document.querySelectorAll('.screen');
-const summaryDifficultyEl = document.getElementById('summary-difficulty');
-const summaryModeEl = document.getElementById('summary-mode');
 
-/* ===================== الترجمة الديناميكية ===================== */
+const hudQuestionCountEl = document.getElementById('hud-question-count');
+const hudScoreEl = document.getElementById('hud-score');
+const hudTimeEl = document.getElementById('hud-time');
+const timerBarFillEl = document.getElementById('timer-bar-fill');
+const questionTextEl = document.getElementById('question-text');
+const optionsGridEl = document.getElementById('options-grid');
+const gamePlayViewEl = document.getElementById('game-play-view');
+const gameResultViewEl = document.getElementById('game-result-view');
+const resultScoreValueEl = document.getElementById('result-score-value');
+const resultTotalValueEl = document.getElementById('result-total-value');
+
+/* ------------------------- 5) أدوات رياضية/عشوائية مساعدة ------------------------- */
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pickRandom(arr) {
+  return arr[randInt(0, arr.length - 1)];
+}
+
+function shuffleArray(arr) {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = randInt(0, i);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+/* ------------------------- 6) مولّدات الأسئلة لكل نمط ------------------------- */
+
+// جمع / طرح
+function generateAdditionSubtraction(mode, difficulty) {
+  const isAddition = mode === 'addition';
+  const sign = isAddition ? '+' : '-';
+  let a, b;
+  let extraTerm = null;
+
+  if (difficulty === 'easy') {
+    a = randInt(1, 20);
+    b = randInt(1, 20);
+  } else if (difficulty === 'medium') {
+    a = randInt(10, 100);
+    b = randInt(10, 100);
+  } else {
+    a = randInt(50, 500);
+    b = randInt(50, 500);
+    if (Math.random() < 0.5) extraTerm = randInt(10, 200); // احتمال عملية ثالثة بالطور الصعب
+  }
+
+  // بالطرح نضمن أن الناتج غير سالب
+  if (!isAddition && a < b) [a, b] = [b, a];
+
+  let expression = `${a} ${sign} ${b}`;
+  let answer = isAddition ? a + b : a - b;
+
+  if (extraTerm !== null) {
+    const extraSign = Math.random() < 0.5 ? '+' : '-';
+    // إذا الطرح الإضافي بيخلي الناتج سالب، نستبدله بجمع لضمان نتيجة موجبة
+    const safeSign = extraSign === '-' && answer < extraTerm ? '+' : extraSign;
+    answer = safeSign === '+' ? answer + extraTerm : answer - extraTerm;
+    expression += ` ${safeSign} ${extraTerm}`;
+  }
+
+  return { question: expression, answer };
+}
+
+// ضرب
+function generateMultiplication(difficulty) {
+  let a, b;
+  if (difficulty === 'easy') {
+    a = randInt(1, 10);
+    b = randInt(1, 10);
+  } else if (difficulty === 'medium') {
+    a = randInt(2, 20);
+    b = randInt(2, 20);
+  } else {
+    a = randInt(10, 99);
+    b = randInt(10, 99);
+  }
+  return { question: `${a} × ${b}`, answer: a * b };
+}
+
+// قسمة — دائمًا ناتج صحيح بدون باقي (نبني المقسوم من الناتج × المقسوم عليه)
+function generateDivision(difficulty) {
+  let quotient, divisor;
+  if (difficulty === 'easy') {
+    quotient = randInt(1, 10);
+    divisor = randInt(1, 10);
+  } else if (difficulty === 'medium') {
+    quotient = randInt(1, 20);
+    divisor = randInt(2, 12);
+  } else {
+    quotient = randInt(1, 50);
+    divisor = randInt(2, 25);
+  }
+  const dividend = quotient * divisor;
+  return { question: `${dividend} ÷ ${divisor}`, answer: quotient };
+}
+
+// إيجاد النمط — نعرض 4-5 حدود ونطلب الحد التالي
+function buildArithmeticSequence(start, step, length) {
+  const seq = [start];
+  for (let i = 1; i < length; i++) seq.push(seq[i - 1] + step);
+  return seq;
+}
+
+function buildGeometricSequence(start, factor, length) {
+  const seq = [start];
+  for (let i = 1; i < length; i++) seq.push(seq[i - 1] * factor);
+  return seq;
+}
+
+function generatePattern(difficulty) {
+  const length = randInt(4, 5);
+  let terms;
+  let next;
+
+  if (difficulty === 'easy') {
+    // قاعدة جمع/طرح ثابت بسيط
+    const step = pickRandom([2, 3, 4, 5, -2, -3, -4]);
+    // بداية كافية تضمن عدم الوصول لأرقام سالبة حتى مع أكبر طول متتالية (5 حدود + الحد التالي)
+    const start = step >= 0 ? randInt(1, 20) : randInt(Math.abs(step) * 6, Math.abs(step) * 6 + 20);
+    terms = buildArithmeticSequence(start, step, length);
+    next = terms[terms.length - 1] + step;
+  } else if (difficulty === 'medium') {
+    if (Math.random() < 0.5) {
+      // قاعدة ضرب ثابت
+      const start = randInt(2, 5);
+      const factor = randInt(2, 3);
+      terms = buildGeometricSequence(start, factor, length);
+      next = terms[terms.length - 1] * factor;
+    } else {
+      // قاعدة طرح متغير: الفرق بين الحدود يكبر تدريجيًا
+      const start = randInt(60, 120);
+      const baseStep = randInt(2, 4);
+      const stepIncrement = randInt(1, 2);
+      terms = [start];
+      let step = baseStep;
+      for (let i = 1; i < length; i++) {
+        terms.push(terms[i - 1] - step);
+        step += stepIncrement;
+      }
+      next = terms[terms.length - 1] - step;
+    }
+  } else {
+    // قاعدة مركبة: ×2 ثم +ثابت بالتناوب
+    const start = randInt(2, 6);
+    const addend = randInt(1, 3);
+    terms = [start];
+    for (let i = 1; i < length; i++) {
+      terms.push(i % 2 === 1 ? terms[i - 1] * 2 : terms[i - 1] + addend);
+    }
+    next = length % 2 === 1 ? terms[terms.length - 1] * 2 : terms[terms.length - 1] + addend;
+  }
+
+  const separator = state.lang === 'ar' ? '، ' : ', ';
+  const questionMark = state.lang === 'ar' ? '؟' : '?';
+  const question = `${terms.join(separator)}${separator}${questionMark}`;
+
+  return { question, answer: next };
+}
+
+// الأسس
+function generateExponents(difficulty) {
+  let base, exp;
+  if (difficulty === 'easy') {
+    base = randInt(2, 5);
+    exp = 2;
+  } else if (difficulty === 'medium') {
+    base = randInt(2, 10);
+    exp = randInt(2, 3);
+  } else {
+    base = randInt(2, 12);
+    exp = randInt(2, 4);
+  }
+  const superscripts = { 2: '²', 3: '³', 4: '⁴' };
+  return { question: `${base}${superscripts[exp]}`, answer: base ** exp };
+}
+
+/* ------------------------- 7) الواجهة العامة لمحرك الأسئلة ------------------------- */
+
+// يبني خيارات إجابة (4 خيارات فريدة) قريبة من الإجابة الصحيحة
+function generateOptions(correct) {
+  const options = new Set([correct]);
+  const spread = Math.max(2, Math.round(Math.abs(correct) * 0.2));
+  let guard = 0;
+
+  while (options.size < 4 && guard < 50) {
+    const offset = randInt(1, spread) * (Math.random() < 0.5 ? -1 : 1);
+    const candidate = correct + offset;
+    if (candidate >= 0) options.add(candidate);
+    guard++;
+  }
+
+  // احتياط نادر (أرقام صغيرة جدًا ما تكفي لتوليد 4 خيارات مختلفة)
+  let filler = correct + 101;
+  while (options.size < 4) options.add(filler++);
+
+  return shuffleArray([...options]);
+}
+
+function buildRawQuestion(mode, difficulty) {
+  switch (mode) {
+    case 'addition':
+    case 'subtraction':
+      return generateAdditionSubtraction(mode, difficulty);
+    case 'multiplication':
+      return generateMultiplication(difficulty);
+    case 'division':
+      return generateDivision(difficulty);
+    case 'pattern':
+      return generatePattern(difficulty);
+    case 'exponents':
+      return generateExponents(difficulty);
+    default:
+      throw new Error(`Unknown game mode: ${mode}`);
+  }
+}
+
+/**
+ * يولّد سؤالًا واحدًا فقط عند الطلب (lazy) — لا يخزّن أي أرشيف من الأسئلة.
+ * @param {string} mode - جمع/طرح/ضرب/قسمة/نمط/أسس
+ * @param {string} difficulty - easy/medium/hard
+ * @returns {{question: string, answer: number, options: number[]}}
+ */
+function generateQuestion(mode, difficulty) {
+  let raw;
+  let attempts = 0;
+
+  // نحاول تفادي تكرار نفس نص السؤال مباشرة (نقارن بآخر سؤالين فقط)
+  do {
+    raw = buildRawQuestion(mode, difficulty);
+    attempts++;
+  } while (state.recentQuestions.includes(raw.question) && attempts < 10);
+
+  state.recentQuestions.push(raw.question);
+  if (state.recentQuestions.length > 2) state.recentQuestions.shift();
+
+  return {
+    question: raw.question,
+    answer: raw.answer,
+    options: generateOptions(raw.answer),
+  };
+}
+
+/**
+ * يقارن إجابة اللاعب بالإجابة الصحيحة.
+ * @returns {boolean}
+ */
+function checkAnswer(userInput, correctAnswer) {
+  return Number(userInput) === Number(correctAnswer);
+}
+
+/* ===================== 8) Game Runtime — إدارة اللعب الحي ===================== */
+
+function startGame() {
+  state.score = 0;
+  state.questionIndex = 0;
+  state.recentQuestions = [];
+  state.currentQuestion = null;
+
+  gameResultViewEl.classList.add('hidden');
+  gamePlayViewEl.classList.remove('hidden');
+  hudScoreEl.textContent = '0';
+
+  loadNextQuestion();
+}
+
+function loadNextQuestion() {
+  const config = DIFFICULTY_CONFIG[state.difficulty];
+
+  if (state.questionIndex >= config.questionCount) {
+    endGame(config);
+    return;
+  }
+
+  // نستبدل currentQuestion بسؤال جديد — القيمة القديمة تُهمل ويتكفل بها الـ GC
+  state.currentQuestion = generateQuestion(state.mode, state.difficulty);
+  state.questionIndex++;
+
+  renderQuestion(config);
+  startTimer(config.countdownSeconds);
+}
+
+function renderQuestion(config) {
+  hudQuestionCountEl.textContent = `${state.questionIndex} / ${config.questionCount}`;
+  questionTextEl.textContent = state.currentQuestion.question;
+
+  optionsGridEl.innerHTML = '';
+  state.currentQuestion.options.forEach((option) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'option-card answer-option';
+    btn.textContent = option;
+    btn.addEventListener('click', () => handleAnswerSelect(option, btn));
+    optionsGridEl.appendChild(btn);
+  });
+}
+
+function startTimer(totalSeconds) {
+  stopTimer();
+  state.timeLeft = totalSeconds;
+  updateTimerUI(totalSeconds, totalSeconds);
+
+  state.timerId = setInterval(() => {
+    state.timeLeft--;
+    updateTimerUI(state.timeLeft, totalSeconds);
+
+    if (state.timeLeft <= 0) {
+      stopTimer();
+      handleAnswerSelect(null, null); // انتهاء الوقت = إجابة خاطئة
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (state.timerId !== null) {
+    clearInterval(state.timerId);
+    state.timerId = null;
+  }
+}
+
+function updateTimerUI(secondsLeft, totalSeconds) {
+  const clamped = Math.max(secondsLeft, 0);
+  hudTimeEl.textContent = clamped;
+  const percent = (clamped / totalSeconds) * 100;
+  timerBarFillEl.style.width = `${percent}%`;
+  timerBarFillEl.classList.toggle('low-time', clamped <= totalSeconds * 0.3);
+}
+
+function handleAnswerSelect(selectedValue, selectedBtn) {
+  stopTimer();
+
+  const allButtons = optionsGridEl.querySelectorAll('.answer-option');
+  allButtons.forEach((btn) => (btn.disabled = true));
+
+  const isCorrect = selectedValue !== null && checkAnswer(selectedValue, state.currentQuestion.answer);
+
+  if (isCorrect) {
+    state.score++;
+    if (selectedBtn) selectedBtn.classList.add('correct');
+  } else if (selectedBtn) {
+    selectedBtn.classList.add('wrong');
+  }
+
+  // نبرز الإجابة الصحيحة دائمًا حتى لو اللاعب أخطأ أو ما جاوب
+  allButtons.forEach((btn) => {
+    if (Number(btn.textContent) === state.currentQuestion.answer) {
+      btn.classList.add('correct');
+    }
+  });
+
+  hudScoreEl.textContent = state.score;
+
+  setTimeout(loadNextQuestion, 900);
+}
+
+function endGame(config) {
+  gamePlayViewEl.classList.add('hidden');
+  gameResultViewEl.classList.remove('hidden');
+  resultScoreValueEl.textContent = state.score;
+  resultTotalValueEl.textContent = config.questionCount;
+}
+
+/* ===================== 9) الترجمة الديناميكية ===================== */
 function applyTranslations() {
   const dict = translations[state.lang];
 
-  // كل عنصر فيه data-i18n يتغيّر نصه حسب اللغة الحالية
   document.querySelectorAll('[data-i18n]').forEach((el) => {
     const key = el.getAttribute('data-i18n');
     if (dict[key]) el.textContent = dict[key];
   });
 
-  // اتجاه ولغة الصفحة
   htmlEl.setAttribute('lang', state.lang);
   htmlEl.setAttribute('dir', state.lang === 'ar' ? 'rtl' : 'ltr');
-
-  // زر تبديل اللغة يعرض اللغة البديلة (اللي رح تنتقل لها)
   langToggleLabel.textContent = state.lang === 'ar' ? 'EN' : 'AR';
-
-  // تحديث ملخص شاشة اللعب إن كانت هناك قيم مختارة
-  updateGameSummary();
 }
 
 function setLanguage(lang) {
@@ -147,23 +528,6 @@ function goToScreen(screenName) {
   });
 }
 
-function updateGameSummary() {
-  if (!summaryDifficultyEl || !summaryModeEl) return;
-  const dict = translations[state.lang];
-
-  summaryDifficultyEl.textContent = state.difficulty
-    ? dict[`difficulty${capitalize(state.difficulty)}`]
-    : '-';
-
-  summaryModeEl.textContent = state.mode
-    ? dict[`mode${capitalize(state.mode)}`]
-    : '-';
-}
-
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
 /* ===================== ربط الأحداث ===================== */
 function initEvents() {
   langToggleBtn.addEventListener('click', toggleLanguage);
@@ -181,8 +545,12 @@ function initEvents() {
     btn.addEventListener('click', () => goToScreen('difficulty'));
   });
 
-  document.querySelectorAll('[data-action="back-to-mode"]').forEach((btn) => {
-    btn.addEventListener('click', () => goToScreen('mode'));
+  // إيقاف اللعبة والرجوع لشاشة الأنماط (من زر الرجوع أثناء اللعب)
+  document.querySelectorAll('[data-action="quit-game"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      stopTimer();
+      goToScreen('mode');
+    });
   });
 
   // اختيار الطور
@@ -193,16 +561,17 @@ function initEvents() {
     });
   });
 
-  // اختيار النمط -> يذهب لشاشة اللعب (placeholder حاليًا)
+  // اختيار النمط -> يبدأ اللعبة فعليًا
   document.querySelectorAll('[data-mode]').forEach((card) => {
     card.addEventListener('click', () => {
       state.mode = card.dataset.mode;
-      updateGameSummary();
       goToScreen('game');
-      // TODO: مرحلة لاحقة — بدء الأسئلة فعليًا هنا باستخدام
-      // DIFFICULTY_CONFIG[state.difficulty] و state.mode
+      startGame();
     });
   });
+
+  document.getElementById('play-again-btn').addEventListener('click', startGame);
+  document.getElementById('back-to-modes-btn').addEventListener('click', () => goToScreen('mode'));
 }
 
 /* ===================== نقطة الانطلاق ===================== */
