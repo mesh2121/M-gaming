@@ -378,10 +378,49 @@ function generateQuestion(mode, difficulty) {
 
 /**
  * يقارن إجابة اللاعب بالإجابة الصحيحة.
+ * يرفض صراحة الإدخال الفاضي/الفراغات فقط/غير الرقمي بدل الاعتماد على تحويل
+ * Number() الضمني (اللي كان يحوّل '' إلى 0 ويعطي true بالغلط لو الإجابة 0).
  * @returns {boolean}
  */
 function checkAnswer(userInput, correctAnswer) {
-  return Number(userInput) === Number(correctAnswer);
+  if (userInput === null || userInput === undefined) return false;
+
+  const trimmed = typeof userInput === 'string' ? userInput.trim() : userInput;
+  if (trimmed === '') return false;
+
+  const numericInput = Number(trimmed);
+  if (Number.isNaN(numericInput)) return false;
+
+  return numericInput === Number(correctAnswer);
+}
+
+/* ===================== أدوات تصحيح مؤقتة (Debug) ===================== */
+
+/**
+ * تطبع 18 حالة (6 أنماط × 3 أطوار) عبر generateQuestion() في الكونسول
+ * للمراجعة اليدوية السريعة. استدعها يدويًا من كونسول المتصفح: debugTestQuestions()
+ * دالة مؤقتة لمرحلة الاختبار — ما تُستدعى تلقائيًا بأي مكان بالتطبيق.
+ */
+function debugTestQuestions() {
+  const modes = ['addition', 'subtraction', 'multiplication', 'division', 'pattern', 'exponents'];
+  const difficulties = ['easy', 'medium', 'hard'];
+  const rows = [];
+
+  modes.forEach((mode) => {
+    difficulties.forEach((difficulty) => {
+      const q = generateQuestion(mode, difficulty);
+      rows.push({
+        mode,
+        difficulty,
+        question: q.question,
+        answer: q.answer,
+        options: q.options ? q.options.join(' / ') : 'null (إدخال مباشر)',
+      });
+    });
+  });
+
+  console.table(rows);
+  return rows;
 }
 
 /* ===================== 8) Game Runtime — إدارة اللعب الحي ===================== */
