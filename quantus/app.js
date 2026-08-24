@@ -47,8 +47,13 @@ const translations = {
     confirmBtn: 'تأكيد',
 
     resultTitle: 'انتهت اللعبة!',
-    playAgainBtn: 'العب مرة أخرى',
-    backToModesBtn: 'الأنماط',
+    newHighScoreBadge: '🎉 رقم قياسي جديد!',
+    resultScoreLabel: 'النقاط الكلية',
+    resultCorrectLabel: 'الإجابات الصحيحة',
+    resultStreakLabel: 'أطول سلسلة',
+    resultBestLabel: 'أفضل نتيجة',
+    playAgainBtn: 'العب مرة ثانية',
+    homeBtn: 'الرئيسية',
   },
 
   en: {
@@ -81,18 +86,24 @@ const translations = {
     confirmBtn: 'Confirm',
 
     resultTitle: 'Game Over!',
+    newHighScoreBadge: '🎉 New High Score!',
+    resultScoreLabel: 'Total Score',
+    resultCorrectLabel: 'Correct Answers',
+    resultStreakLabel: 'Longest Streak',
+    resultBestLabel: 'Best Score',
     playAgainBtn: 'Play Again',
-    backToModesBtn: 'Modes',
+    homeBtn: 'Home',
   },
 };
 
 /* ------------------------- 2) إعدادات كل طور -------------------------
-   تتحكم بسرعة العد التنازلي لكل سؤال. نطاق الأرقام الفعلي لكل نمط
-   محدد داخل مولّد ذلك النمط نفسه لأن كل نمط له نطاقات مختلفة تمامًا. */
+   تتحكم بسرعة العد التنازلي والنقاط الأساسية لكل سؤال. نطاق الأرقام
+   الفعلي لكل نمط محدد داخل مولّد ذلك النمط نفسه لأن كل نمط له نطاقات
+   مختلفة تمامًا. */
 const DIFFICULTY_CONFIG = {
-  easy: { countdownSeconds: 15 },
-  medium: { countdownSeconds: 10 },
-  hard: { countdownSeconds: 6 },
+  easy: { countdownSeconds: 15, basePoints: 10 },
+  medium: { countdownSeconds: 10, basePoints: 20 },
+  hard: { countdownSeconds: 6, basePoints: 35 },
 };
 
 // عدد الأسئلة بكل جولة — ثابت لكل الأطوار
@@ -100,6 +111,11 @@ const ROUND_LENGTH = 10;
 
 // مدة عرض التغذية الراجعة (أخضر/أحمر) قبل الانتقال للسؤال التالي
 const FEEDBACK_DELAY_MS = 500;
+
+/* ------------------------- إعدادات نظام النقاط ------------------------- */
+const SPEED_BONUS_RATIO = 0.5; // نسبة النقاط الإضافية إذا أجاب بأقل من نصف الوقت
+const STREAK_THRESHOLD = 3; // عدد الإجابات المتتالية اللازم لتفعيل مضاعف السلسلة
+const STREAK_MULTIPLIER = 1.5;
 
 /* ------------------------- 3) كائن الحالة (State) -------------------------
    حالة اللعب الحي (currentQuestion, score...) هنا أيضًا — بدون أي مصفوفة
@@ -114,9 +130,13 @@ const state = {
   currentQuestion: null, // السؤال الحالي فقط — يُستبدل بالكامل عند كل سؤال جديد
   recentQuestions: [], // آخر سؤالين (نص) فقط، لمنع تكرار نفس السؤال مباشرة
   score: 0,
+  correctCount: 0, // عدد الإجابات الصحيحة من أصل ROUND_LENGTH
+  currentStreak: 0, // يزيد بكل إجابة صحيحة متتالية، يرجع صفر عند أي خطأ/تايم آوت
+  longestStreak: 0, // أطول سلسلة تحققت خلال الجولة الحالية
   questionIndex: 0,
   timerId: null,
   timeLeft: 0,
+  questionStartTime: 0, // وقت بدء السؤال الحالي (Date.now()) — لحساب مكافأة السرعة بدقة
 };
 
 /* ------------------------- 4) عناصر DOM ثابتة ------------------------- */
@@ -136,10 +156,15 @@ const optionsGridEl = document.getElementById('options-grid');
 const inputAnswerAreaEl = document.getElementById('input-answer-area');
 const answerInputEl = document.getElementById('answer-input');
 const confirmAnswerBtn = document.getElementById('confirm-answer-btn');
+const streakIndicatorEl = document.getElementById('streak-indicator');
+const streakCountEl = document.getElementById('streak-count');
 const gamePlayViewEl = document.getElementById('game-play-view');
 const gameResultViewEl = document.getElementById('game-result-view');
+const newHighScoreBadgeEl = document.getElementById('new-high-score-badge');
 const resultScoreValueEl = document.getElementById('result-score-value');
-const resultTotalValueEl = document.getElementById('result-total-value');
+const resultCorrectCountEl = document.getElementById('result-correct-count');
+const resultLongestStreakEl = document.getElementById('result-longest-streak');
+const resultHighScoreEl = document.getElementById('result-high-score');
 
 /* ------------------------- 5) أدوات رياضية/عشوائية مساعدة ------------------------- */
 function randInt(min, max) {
@@ -394,6 +419,42 @@ function checkAnswer(userInput, correctAnswer) {
   return numericInput === Number(correctAnswer);
 }
 
+/**
+ * يحسب نقاط إجابة صحيحة واحدة (دالة نقية — لا تلمس state).
+ * الترتيب: نقاط أساسية حسب الطور -> + مكافأة سرعة (50% إذا أقل من نص الوقت)
+ * -> × 1.5 إذا وصلت السلسلة (بعد احتساب هذه الإجابة) لـ 3 فأكثر.
+ * @param {string} difficulty - easy/medium/hard
+ * @param {number} elapsedSeconds - الوقت المستغرق فعليًا للإجابة
+ * @param {number} totalSeconds - الوقت الكلي المتاح للسؤال (DIFFICULTY_CONFIG)
+ * @param {number} streakBefore - عدد الإجابات الصحيحة المتتالية قبل هذه الإجابة
+ * @returns {{points: number, newStreak: number}}
+ */
+function calculatePoints(difficulty, elapsedSeconds, totalSeconds, streakBefore) {
+  const basePoints = DIFFICULTY_CONFIG[difficulty].basePoints;
+  const speedBonus = elapsedSeconds < totalSeconds / 2 ? basePoints * SPEED_BONUS_RATIO : 0;
+  const subtotal = basePoints + speedBonus;
+
+  const newStreak = streakBefore + 1;
+  const multiplier = newStreak >= STREAK_THRESHOLD ? STREAK_MULTIPLIER : 1;
+
+  return { points: Math.round(subtotal * multiplier), newStreak };
+}
+
+/**
+ * مفتاح localStorage لأفضل نتيجة لكل تركيبة (نمط + طور).
+ */
+function highScoreKey(mode, difficulty) {
+  return `quantus_highscore_${mode}_${difficulty}`;
+}
+
+function getHighScore(mode, difficulty) {
+  return Number(localStorage.getItem(highScoreKey(mode, difficulty))) || 0;
+}
+
+function setHighScore(mode, difficulty, score) {
+  localStorage.setItem(highScoreKey(mode, difficulty), String(score));
+}
+
 /* ===================== أدوات تصحيح مؤقتة (Debug) ===================== */
 
 /**
@@ -426,16 +487,28 @@ function debugTestQuestions() {
 /* ===================== 8) Game Runtime — إدارة اللعب الحي ===================== */
 
 function startGame() {
-  state.score = 0;
-  state.questionIndex = 0;
-  state.recentQuestions = [];
-  state.currentQuestion = null;
+  resetRoundStats();
 
   gameResultViewEl.classList.add('hidden');
   gamePlayViewEl.classList.remove('hidden');
   hudScoreEl.textContent = '0';
+  updateStreakIndicatorUI();
 
   loadNextQuestion();
+}
+
+/**
+ * يصفّر إحصائيات الجولة (نقاط/سلسلة/إجابات صحيحة) بدون التأثير على
+ * الطور/النمط/اللغة/الصوت المختارين.
+ */
+function resetRoundStats() {
+  state.score = 0;
+  state.correctCount = 0;
+  state.currentStreak = 0;
+  state.longestStreak = 0;
+  state.questionIndex = 0;
+  state.recentQuestions = [];
+  state.currentQuestion = null;
 }
 
 function loadNextQuestion() {
@@ -491,6 +564,7 @@ function handleInputConfirm() {
 function startTimer(totalSeconds) {
   stopTimer();
   state.timeLeft = totalSeconds;
+  state.questionStartTime = Date.now(); // لحساب مكافأة السرعة بدقة (أدق من عدّاد الثواني)
   updateTimerUI(totalSeconds, totalSeconds);
 
   state.timerId = setInterval(() => {
@@ -536,10 +610,20 @@ function finishQuestion(selectedValue, feedbackEl) {
   const isCorrect = selectedValue !== null && checkAnswer(selectedValue, state.currentQuestion.answer);
 
   if (isCorrect) {
-    state.score++;
+    const totalSeconds = DIFFICULTY_CONFIG[state.difficulty].countdownSeconds;
+    const elapsedSeconds = (Date.now() - state.questionStartTime) / 1000;
+    const { points, newStreak } = calculatePoints(state.difficulty, elapsedSeconds, totalSeconds, state.currentStreak);
+
+    state.score += points;
+    state.correctCount++;
+    state.currentStreak = newStreak;
+    state.longestStreak = Math.max(state.longestStreak, newStreak);
+
     if (feedbackEl) feedbackEl.classList.add('correct');
-  } else if (feedbackEl) {
-    feedbackEl.classList.add('wrong');
+  } else {
+    // إجابة خاطئة أو انتهاء وقت: صفر نقاط لهذا السؤال، وكسر السلسلة فورًا
+    state.currentStreak = 0;
+    if (feedbackEl) feedbackEl.classList.add('wrong');
   }
 
   // باختيار من متعدد: نبرز الإجابة الصحيحة دائمًا حتى لو اللاعب أخطأ أو ما جاوب
@@ -550,16 +634,43 @@ function finishQuestion(selectedValue, feedbackEl) {
   });
 
   hudScoreEl.textContent = state.score;
+  updateStreakIndicatorUI();
 
   // نمسح الـ interval فورًا (فوق) ثم نمنح وقت قصير لعرض اللون قبل توليد السؤال التالي
   setTimeout(loadNextQuestion, FEEDBACK_DELAY_MS);
 }
 
+/**
+ * مؤشر السلسلة "🔥 N" يظهر فقط لما تكون السلسلة نشطة (فعّلت المضاعف بالفعل).
+ */
+function updateStreakIndicatorUI() {
+  if (state.currentStreak >= STREAK_THRESHOLD) {
+    streakCountEl.textContent = state.currentStreak;
+    streakIndicatorEl.classList.remove('hidden');
+  } else {
+    streakIndicatorEl.classList.add('hidden');
+  }
+}
+
 function endGame() {
   gamePlayViewEl.classList.add('hidden');
   gameResultViewEl.classList.remove('hidden');
+
   resultScoreValueEl.textContent = state.score;
-  resultTotalValueEl.textContent = ROUND_LENGTH;
+  resultCorrectCountEl.textContent = `${state.correctCount} / ${ROUND_LENGTH}`;
+  resultLongestStreakEl.textContent = state.longestStreak;
+
+  const previousHighScore = getHighScore(state.mode, state.difficulty);
+  const isNewHighScore = state.score > previousHighScore;
+
+  if (isNewHighScore) {
+    setHighScore(state.mode, state.difficulty, state.score);
+    newHighScoreBadgeEl.classList.remove('hidden');
+    resultHighScoreEl.textContent = state.score;
+  } else {
+    newHighScoreBadgeEl.classList.add('hidden');
+    resultHighScoreEl.textContent = previousHighScore;
+  }
 }
 
 /* ===================== 9) الترجمة الديناميكية ===================== */
@@ -649,8 +760,17 @@ function initEvents() {
     });
   });
 
-  document.getElementById('play-again-btn').addEventListener('click', startGame);
-  document.getElementById('back-to-modes-btn').addEventListener('click', () => goToScreen('mode'));
+  // من شاشة النتيجة: "العب مرة ثانية" يرجع لاختيار الطور والنمط، "الرئيسية" يرجع للبداية
+  // (goToScreen توقف المؤقت تلقائيًا؛ resetRoundStats يصفّر النقاط/السلسلة/عدد الصحيح)
+  document.getElementById('play-again-btn').addEventListener('click', () => {
+    resetRoundStats();
+    goToScreen('difficulty');
+  });
+
+  document.getElementById('home-btn').addEventListener('click', () => {
+    resetRoundStats();
+    goToScreen('start');
+  });
 
   // نمط الإدخال المباشر (options === null): زر التأكيد أو مفتاح Enter
   confirmAnswerBtn.addEventListener('click', handleInputConfirm);

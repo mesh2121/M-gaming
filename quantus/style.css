@@ -346,6 +346,27 @@ html[dir="rtl"] .btn-back { align-self: flex-end; }
   unicode-bidi: plaintext;
 }
 
+/* مؤشر السلسلة (Streak) */
+.streak-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(227, 190, 67, 0.15);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding: 6px 16px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  animation: pulseStreak 1s ease infinite;
+}
+
+@keyframes pulseStreak {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
 .answer-grid {
   grid-template-columns: repeat(2, 1fr);
   max-width: 460px;
@@ -427,15 +448,63 @@ html[dir="rtl"] .btn-back { align-self: flex-end; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   padding: 20px 0;
+  width: 100%;
 }
 
-.result-score {
-  font-size: 2.4rem;
+.high-score-badge {
+  background: var(--accent);
+  color: var(--bg-color);
+  font-weight: 800;
+  padding: 6px 18px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+  animation: pulseStreak 1s ease infinite;
+}
+
+.result-score-value {
+  font-size: clamp(3rem, 12vw, 4.5rem);
   font-weight: 800;
   color: var(--accent);
-  margin: 6px 0 20px;
+  margin: 4px 0 0;
+  line-height: 1;
+}
+
+.result-score-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 20px;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: 24px;
+}
+
+.result-stat {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.result-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.result-stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-light);
 }
 
 .result-actions {

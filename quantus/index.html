@@ -130,6 +130,11 @@
 
         <!-- منطقة عرض السؤال والخيارات -->
         <div id="game-play-view" class="game-play-view">
+          <!-- مؤشر السلسلة (يظهر فقط عند 3 إجابات صحيحة متتالية فأكثر) -->
+          <div id="streak-indicator" class="streak-indicator hidden">
+            🔥 <span id="streak-count">0</span>
+          </div>
+
           <p id="question-text" class="question-text">-</p>
 
           <!-- اختيار من متعدد (تُبنى الأزرار ديناميكيًا) -->
@@ -151,12 +156,30 @@
         <!-- شاشة النتيجة النهائية -->
         <div id="game-result-view" class="game-result-view hidden">
           <h2 class="screen-title" data-i18n="resultTitle"></h2>
-          <p class="result-score">
-            <span id="result-score-value">0</span> / <span id="result-total-value">0</span>
-          </p>
+
+          <div id="new-high-score-badge" class="high-score-badge hidden" data-i18n="newHighScoreBadge"></div>
+
+          <p id="result-score-value" class="result-score-value">0</p>
+          <p class="result-score-label" data-i18n="resultScoreLabel"></p>
+
+          <div class="result-stats">
+            <div class="result-stat">
+              <span class="result-stat-label" data-i18n="resultCorrectLabel"></span>
+              <span id="result-correct-count" class="result-stat-value">-</span>
+            </div>
+            <div class="result-stat">
+              <span class="result-stat-label" data-i18n="resultStreakLabel"></span>
+              <span id="result-longest-streak" class="result-stat-value">0</span>
+            </div>
+            <div class="result-stat">
+              <span class="result-stat-label" data-i18n="resultBestLabel"></span>
+              <span id="result-high-score" class="result-stat-value">0</span>
+            </div>
+          </div>
+
           <div class="result-actions">
             <button id="play-again-btn" class="btn btn-primary" type="button" data-i18n="playAgainBtn"></button>
-            <button id="back-to-modes-btn" class="btn btn-back" type="button" data-i18n="backToModesBtn"></button>
+            <button id="home-btn" class="btn btn-back" type="button" data-i18n="homeBtn"></button>
           </div>
         </div>
       </div>
